@@ -1,0 +1,119 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: Monospace;
+        }
+        
+        #header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #chatbox {
+            height: calc(100% - 100px);
+            overflow-y: scroll;
+            padding: 10px;
+            left: 5%;
+            right: 5%;
+            width: 90%;
+        }
+        
+        .user-message {
+            text-align: right;
+            background-color: beige;
+            border-radius: 10px;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            width: 50%;
+            align-self: flex-end;
+            margin-left: auto; /* Added */
+            font-family: Monospace;
+        }
+        
+        .system-message {
+            text-align: left;
+            background-color: lightblue; /* Updated */
+            border-radius: 10px;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            width: 50%;
+            align-self: flex-start; /* Updated */
+            font-family: Monospace;
+        }
+        
+        #message-container {
+            display: flex;
+            justify-content: center;
+            position: fixed;
+            bottom: 20px;
+            left: 5%;
+            right: 5%;
+            width: 90%;
+        }
+        
+        #message {
+            flex: 1;
+            padding: 5px;
+            margin-right: 10px;
+            font-family: Monospace;
+        }
+        
+        #send {
+            padding: 5px 10px;
+            font-family: Monospace;
+        }
+
+        #real-message-container {
+            left: 5%;
+            right: 5%;
+            width: 90%;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">CHATBOT with COUCHBASE</div>
+    <div id="chatbox"> </div>
+    <div id="message-container">
+        <input id="message" type="text" onkeydown="if(event.keyCode===13) document.getElementById('send').click()"> <!-- Updated -->
+        <button id="send">Send</button>
+    </div>
+
+    <script>
+        var socket = io.connect('http://localhost:5000');
+        var lastTimestamp = null;
+        socket.on('message', function(msg) {
+            console.log('messsage received in html: ' + msg);
+            const { timestamp, message_string } = msg;
+            if (timestamp === lastTimestamp) {
+                $('.system-message:last').text(message_string);
+            } else {
+                $('#chatbox').append('<p class="system-message">' + message_string + '</p>');
+                $('.system-message:last').text(message_string);
+            }
+            lastTimestamp = timestamp;
+            $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
+        });
+        $('#send').click(function() {
+            var msg = $('#message').val();
+            $('#message').val('');
+            $('#chatbox').append('<p class="user-message">' + msg + '</p>');
+            socket.emit('message', msg);
+            $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
+        });
+    </script>
+</body>
+</html>
