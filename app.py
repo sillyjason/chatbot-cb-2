@@ -4,94 +4,61 @@ from langchain.memory import ChatMessageHistory
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from dotenv import load_dotenv
-from langchain_community.vectorstores import CouchbaseVectorStore
 from langchain_openai import OpenAIEmbeddings
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions
 from couchbase.auth import PasswordAuthenticator
 import os 
-from datetime import timedelta
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from typing import Dict
-from langchain_core.runnables import RunnablePassthrough
-from langchain_anthropic import ChatAnthropic
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import time
-
-
+from openai import OpenAI
+from couchbase.vector_search import VectorQuery, VectorSearch
+import couchbase.search as search
+from couchbase.options import SearchOptions
+from langchain_core.documents import Document
 
 load_dotenv()
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-messages = []
+
+# Couchbase connection setup
+pa = PasswordAuthenticator(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD"))
+cluster = Cluster(os.getenv("CB_HOSTNAME") + "/?ssl=no_verify", ClusterOptions(pa))
+bucket = cluster.bucket("vector-sample")
+scope = bucket.scope("color")
+search_index = "color-index"
+collection = scope.collection("rgb")
+
+# OpenAI chat setup
 demo_ephemeral_chat_history = ChatMessageHistory()
+chat = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.1)    
+client = OpenAI()
+embeddings = OpenAIEmbeddings()
+prompt = ChatPromptTemplate.from_template("""Answer the following question incorporating the following context:
 
-chat = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.99)
+<context>
+{context}
+</context>
 
-question_answering_prompt = ChatPromptTemplate.from_messages(
+Question: {input}""")
+    
+document_chain = create_stuff_documents_chain(chat, prompt)
+
+query_transform_prompt = ChatPromptTemplate.from_messages(
     [
-        (
-            "system",
-            "Answer the user's questions based on the below context:\n\n{context}",
-        ),
         MessagesPlaceholder(variable_name="messages"),
+        (
+            "user",
+            "Given the above conversation, generate a search query to look up in order to get information relevant to the conversation. Only respond with the query, nothing else.",
+        ),
     ]
 )
 
-document_chain = create_stuff_documents_chain(chat, question_answering_prompt)
+query_transformation_chain = query_transform_prompt | chat
 
-def parse_retriever_input(params: Dict):
-    return params["messages"][-1].content
-
-COUCHBASE_CONNECTION_STRING = os.getenv("CB_HOSTNAME")
-DB_USERNAME = os.getenv("CB_USERNAME")
-DB_PASSWORD = os.getenv("CB_PASSWORD")
-    
-auth = PasswordAuthenticator(DB_USERNAME, DB_PASSWORD)
-options = ClusterOptions(auth)
-cluster = Cluster(COUCHBASE_CONNECTION_STRING, options)
-
-# Wait until the cluster is ready for use.
-cluster.wait_until_ready(timedelta(seconds=5))
-BUCKET_NAME = "vector-sample"
-SCOPE_NAME = "color"
-COLLECTION_NAME = "rgb"
-SEARCH_INDEX_NAME = "color-index"
-
-embeddings = OpenAIEmbeddings()
-
-loader = WebBaseLoader("https://docs.smith.langchain.com/overview") 
-data = loader.load()
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
-all_splits = text_splitter.split_documents(data)    
-    
-vectorstore = CouchbaseVectorStore(
-    embedding=embeddings,
-    cluster=cluster,
-    bucket_name=BUCKET_NAME,
-    scope_name=SCOPE_NAME,
-    collection_name=COLLECTION_NAME,
-    index_name=SEARCH_INDEX_NAME,
-)
-
-retriever = vectorstore.as_retriever(k=4)
-
-
-retrieval_chain = RunnablePassthrough.assign(
-    context=parse_retriever_input | retriever,
-).assign(
-    answer=document_chain,
-)
-
-retrival_chain_parser = (
-    retrieval_chain
-    | StrOutputParser()
-)
     
 @app.route('/')
 def index():
@@ -100,25 +67,42 @@ def index():
 
 @socketio.on('message')
 def handle_message(msg):
-    messages.append(msg)
     demo_ephemeral_chat_history.add_user_message(msg)
 
-    message_string = ""
-    
+    #0. setup variables
+    message_string = ""   
     timestamp = int(time.time())
     
-    for chunk in retrieval_chain.stream({"messages": demo_ephemeral_chat_history.messages}): 
-        print('chunk here is:', chunk)
-        
-        if "answer" in chunk:
-            message_string += chunk["answer"]
+    #1. incorporating the chat history together with the new questions to generate an independent prompt
+    new_query = query_transformation_chain.invoke({"messages": demo_ephemeral_chat_history.messages}).content 
+    
+    #2. turn it into an embedding
+    vector = client.embeddings.create(input = [new_query], model="text-embedding-ada-002").data[0].embedding
+    
+    #3. using Couchbase SDK 
+    search_req = search.SearchRequest.create(search.MatchNoneQuery()).with_vector_search(
+    VectorSearch.from_vector_query(VectorQuery('embedding_vector_dot', vector, num_candidates=3)))
+    result = scope.search(search_index, search_req, SearchOptions(limit=13,fields=["description"]))
+    
+    #4. parsing the results
+    ids = []
+    additional_context = ""
+    
+    for row in result.rows():
+        ids.append(row.id)
+        additional_context += row.fields["description"] + "\n"
+    
+    #5. streaming
+    for chunk in document_chain.stream({"input": new_query, "context": [Document(page_content=additional_context)] }):
+        message_string += chunk
             
         emit('message', {
             "timestamp": timestamp, 
-            "message_string": message_string
+            "message_string": message_string,
+            "documents": ids 
         })  
     
-    messages.append(message_string)
+    demo_ephemeral_chat_history.add_ai_message(message_string)
     
     
 if __name__ == '__main__':

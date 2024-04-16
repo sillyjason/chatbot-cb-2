@@ -54,6 +54,16 @@
             align-self: flex-start; /* Updated */
             font-family: Monospace;
         }
+
+        .found-documents {
+            text-align: left;
+            border-radius: 10px;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            width: 50%;
+            align-self: flex-start; /* Updated */
+            font-family: Monospace;
+        }
         
         #message-container {
             display: flex;
@@ -96,12 +106,18 @@
         var socket = io.connect('http://localhost:5000');
         var lastTimestamp = null;
         socket.on('message', function(msg) {
-            console.log('messsage received in html: ' + msg);
-            const { timestamp, message_string } = msg;
+            const { timestamp, message_string, documents } = msg;
+            console.log('documents: ', documents);
+
+            const found_documents_string = "Found documents from Couchbase: " + documents.join(", ");
+
             if (timestamp === lastTimestamp) {
+                $('.found-documents:last').text(found_documents_string);
                 $('.system-message:last').text(message_string);
             } else {
+                $('#chatbox').append('<p class="found-documents">' + found_documents_string + '</p>');
                 $('#chatbox').append('<p class="system-message">' + message_string + '</p>');
+                $('.found-documents:last').text(found_documents_string);
                 $('.system-message:last').text(message_string);
             }
             lastTimestamp = timestamp;
