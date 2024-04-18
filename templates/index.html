@@ -6,6 +6,82 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <style>
+        #embedding_model_selection {
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+        #model-selection {
+            margin-left: 10px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 120px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(86px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        .label-left, .label-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: .4s;
+            opacity: 0.3;
+        }
+        .label-left {
+            left: 10px;
+        }
+        .label-right {
+            right: 10px;
+        }
+        input:checked + .slider .label-left {
+            opacity: 0.3;
+        }
+        input:checked + .slider .label-right {
+            opacity: 1;
+        }
+        input:not(:checked) + .slider .label-left {
+            opacity: 1;
+        }
+        input:not(:checked) + .slider .label-right {
+            opacity: 0.3;
+        }
         body {
             display: flex;
             flex-direction: column;
@@ -27,9 +103,12 @@
             height: calc(100% - 100px);
             overflow-y: scroll;
             padding: 10px;
-            left: 5%;
-            right: 5%;
-            width: 90%;
+            left: 3%;
+            right: 3%;
+            width: 94%;
+            bottom: 50px;
+            max-height: calc(100vh - 200px); /* Adjust this value as needed */
+            overflow-y: auto;
         }
         
         .user-message {
@@ -100,6 +179,22 @@
 </head>
 <body>
     <div id="header">CHATBOT with COUCHBASE</div>
+    <div style="position: absolute; top: 10px; right: 10px;">
+        <label class="switch">
+            <input type="checkbox" id="toggle">
+            <span class="slider round">
+                <span class="label-left">OpenAI</span>
+                <span class="label-right">Claude</span>
+            </span>
+        </label>
+    </div>
+    <div id="embedding_model_selection">
+        <span>Embedding Model:</span>
+        <select id="model-selection" onchange="handleModelChange(event)">
+            <option value="model1" selected>[OpenAI]text-embedding-ada-002</option>
+            <option value="model2">[HuggingFace]sentence-transformers/all-MiniLM-l6-v2</option>
+        </select>
+    </div>
     <div id="chatbox"> </div>
     <div id="message-container">
         <input id="message" type="text" onkeydown="if(event.keyCode===13) document.getElementById('send').click()"> <!-- Updated -->
@@ -147,6 +242,38 @@
             socket.emit('message', msg);
             $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
         });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('#toggle').change(function() {
+                var value = $(this).is(':checked') ? 2 : 1;
+                $.ajax({
+                    url: '/update_chat_model_toggle',
+                    type: 'POST',
+                    data: JSON.stringify({ 'value': value }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        console.log(response);
+                    }
+                });
+            });
+        });
+    </script>
+     <script>
+        function handleModelChange(event) {
+            var selectedModel = event.target.value;
+            // Here you would typically make an AJAX request to your server-side Python code
+            console.log("Selected model: " + selectedModel);
+            $.ajax({
+                    url: '/update_embedding_model_toggle',
+                    type: 'POST',
+                    data: JSON.stringify({ 'selectedModel': selectedModel }),
+                    contentType: 'application/json',
+                    success: function(response) {
+                        console.log(response);
+                    }
+                });
+        }
     </script>
 </body>
 </html>

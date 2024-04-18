@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 from langchain.memory import ChatMessageHistory
 from langchain_openai import ChatOpenAI
@@ -17,12 +17,16 @@ from couchbase.vector_search import VectorQuery, VectorSearch
 import couchbase.search as search
 from couchbase.options import SearchOptions
 from langchain_core.documents import Document
+from langchain_anthropic import ChatAnthropic
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 
 load_dotenv()
 
 app = Flask(__name__)
 socketio = SocketIO(app)
 
+chat_model_toggle = 1
+embedding_model_toggle = "model1"
 
 # Couchbase connection setup
 pa = PasswordAuthenticator(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD"))
@@ -34,18 +38,21 @@ search_index = os.getenv("CB_VECTOR_INDEX_NAME")
 
 # OpenAI chat setup
 demo_ephemeral_chat_history = ChatMessageHistory()
-chat = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.1)    
-client = OpenAI()
-embeddings = OpenAIEmbeddings()
-prompt = ChatPromptTemplate.from_template("""Answer the following question incorporating the following context:
+chat_openai = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.9)    
+chat_claude = ChatAnthropic(temperature=0.9, api_key=os.getenv('ANTHROPIC_API_KEY'), model_name="claude-3-opus-20240229")
+client_openai = OpenAI()
+hf_embeddings = HuggingFaceInferenceAPIEmbeddings(
+    api_key=os.getenv("HUGGING_FACE_API_KEY"), model_name="sentence-transformers/all-MiniLM-l6-v2"
+)
+prompt_openai = ChatPromptTemplate.from_template("""Answer the following question incorporating the following context:
+
+
 
 <context>
 {context}
 </context>
 
 Question: {input}""")
-    
-document_chain = create_stuff_documents_chain(chat, prompt)
 
 query_transform_prompt = ChatPromptTemplate.from_messages(
     [
@@ -56,17 +63,33 @@ query_transform_prompt = ChatPromptTemplate.from_messages(
         ),
     ]
 )
-
-query_transformation_chain = query_transform_prompt | chat
-
     
 @app.route('/')
 def index():
     return render_template('index.html')
 
+@app.route('/update_chat_model_toggle', methods=['POST'])
+def update_chat_model_toggle():
+    global chat_model_toggle
+    chat_model_toggle = request.json['value']
+    return jsonify(success=True)
+
+@app.route('/update_embedding_model_toggle', methods=['POST'])
+def update_embedding_model_toggle():
+    global embedding_model_toggle
+    embedding_model_toggle = request.json['selectedModel']
+    return jsonify(success=True)
 
 @socketio.on('message')
 def handle_message(msg):
+    
+    print("current chat model toggle: ", chat_model_toggle)
+    
+    if chat_model_toggle == 1:
+        chat_model = chat_openai
+    else:
+        chat_model = chat_claude
+    
     demo_ephemeral_chat_history.add_user_message(msg)
 
     #0. setup variables
@@ -74,17 +97,27 @@ def handle_message(msg):
     timestamp = int(time.time())
     
     #1. incorporating the chat history together with the new questions to generate an independent prompt
+    query_transformation_chain = query_transform_prompt | chat_model
     new_query = query_transformation_chain.invoke({"messages": demo_ephemeral_chat_history.messages}).content 
     
     #2. turn it into an embedding
-    vector = client.embeddings.create(input = [new_query], model="text-embedding-ada-002").data[0].embedding
-    
-    #3. using Couchbase SDK 
-    
+    if embedding_model_toggle == "model1":
+        vector = client_openai.embeddings.create(input = [new_query], model="text-embedding-ada-002").data[0].embedding
+    else:
+        vector = hf_embeddings.embed_query(new_query)
+   
+    #3. using Couchbase SDK  
     key_context_field = os.getenv("KEY_CONTEXT_FIELD")
     
+    if embedding_model_toggle == "model1":
+        embedding_field = 'embedding'
+    else:
+        embedding_field = "embedding_hugging_face"
+    
+    print("embedding field: ", embedding_field)
+    
     search_req = search.SearchRequest.create(search.MatchNoneQuery()).with_vector_search(
-    VectorSearch.from_vector_query(VectorQuery(os.getenv("EMBEDDING_FIELD"), vector, num_candidates=3)))
+    VectorSearch.from_vector_query(VectorQuery(embedding_field, vector, num_candidates=3)))
     result = scope.search(search_index, search_req, SearchOptions(limit=13,fields=[key_context_field, "source"]))
     
     #4. parsing the results
@@ -95,13 +128,16 @@ def handle_message(msg):
     for row in result.rows():
         ids.append(row.id)
         
-        print('ROW DATA: ', row)
-        
         additional_context += row.fields[key_context_field] + "\n"
         documents.append(row.fields)
     
     #5. streaming
-    for chunk in document_chain.stream({"input": new_query, "context": [Document(page_content=additional_context)] }):
+    document_chain = create_stuff_documents_chain(chat_model, prompt_openai)
+    
+    for chunk in document_chain.stream({
+        "input": new_query, 
+        "context": [Document(page_content=additional_context)] 
+    }):
         message_string += chunk
             
         emit('message', {
