@@ -65,6 +65,10 @@
             font-family: Monospace;
         }
         
+        .found-document-ids {
+            text-align: left;
+        }
+
         #message-container {
             display: flex;
             justify-content: center;
@@ -106,19 +110,32 @@
         var socket = io.connect('http://localhost:5000');
         var lastTimestamp = null;
         socket.on('message', function(msg) {
-            const { timestamp, message_string, documents } = msg;
-            console.log('documents: ', documents);
+            const { timestamp, message_string, documents, document_ids } = msg;
 
-            const found_documents_string = "Found documents from Couchbase: " + documents.join(", ");
+            console.log('documents 1', Object.keys(documents[0]))
+
+            const found_documents_string = "Found documents from Couchbase: " 
 
             if (timestamp === lastTimestamp) {
                 $('.found-documents:last').text(found_documents_string);
                 $('.system-message:last').text(message_string);
+                $('.found-document-ids:last').html(documentTexts);
             } else {
                 $('#chatbox').append('<p class="found-documents">' + found_documents_string + '</p>');
+                
+                var documentTexts = '';
+                for (var i = 0; i < document_ids.length; i++) {
+                    var documentId = document_ids[i];
+                    var document = documents[i];
+                    
+                    var documentText = document.source ? '<a href="' + document.source + '">' + documentId + '</a>' : documentId;
+                    documentTexts += documentText + ' ';
+                }
+                $('#chatbox').append('<p class="found-document-ids">' + documentTexts + '</p>');
                 $('#chatbox').append('<p class="system-message">' + message_string + '</p>');
                 $('.found-documents:last').text(found_documents_string);
                 $('.system-message:last').text(message_string);
+                $('.found-document-ids:last').html(documentTexts);
             }
             lastTimestamp = timestamp;
             $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);

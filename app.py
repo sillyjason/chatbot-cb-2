@@ -27,10 +27,10 @@ socketio = SocketIO(app)
 # Couchbase connection setup
 pa = PasswordAuthenticator(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD"))
 cluster = Cluster(os.getenv("CB_HOSTNAME") + "/?ssl=no_verify", ClusterOptions(pa))
-bucket = cluster.bucket("vector-sample")
-scope = bucket.scope("color")
-search_index = "color-index"
-collection = scope.collection("rgb")
+bucket = cluster.bucket(os.getenv("CB_BUCKET_NAME"))
+scope = bucket.scope(os.getenv("CB_SCOPE_NAME"))
+collection = scope.collection(os.getenv("CB_COLLECTION_NAME"))
+search_index = os.getenv("CB_VECTOR_INDEX_NAME")
 
 # OpenAI chat setup
 demo_ephemeral_chat_history = ChatMessageHistory()
@@ -80,17 +80,25 @@ def handle_message(msg):
     vector = client.embeddings.create(input = [new_query], model="text-embedding-ada-002").data[0].embedding
     
     #3. using Couchbase SDK 
+    
+    key_context_field = os.getenv("KEY_CONTEXT_FIELD")
+    
     search_req = search.SearchRequest.create(search.MatchNoneQuery()).with_vector_search(
-    VectorSearch.from_vector_query(VectorQuery('embedding_vector_dot', vector, num_candidates=3)))
-    result = scope.search(search_index, search_req, SearchOptions(limit=13,fields=["description"]))
+    VectorSearch.from_vector_query(VectorQuery(os.getenv("EMBEDDING_FIELD"), vector, num_candidates=3)))
+    result = scope.search(search_index, search_req, SearchOptions(limit=13,fields=[key_context_field, "source"]))
     
     #4. parsing the results
     ids = []
     additional_context = ""
+    documents = []
     
     for row in result.rows():
         ids.append(row.id)
-        additional_context += row.fields["description"] + "\n"
+        
+        print('ROW DATA: ', row)
+        
+        additional_context += row.fields[key_context_field] + "\n"
+        documents.append(row.fields)
     
     #5. streaming
     for chunk in document_chain.stream({"input": new_query, "context": [Document(page_content=additional_context)] }):
@@ -99,7 +107,8 @@ def handle_message(msg):
         emit('message', {
             "timestamp": timestamp, 
             "message_string": message_string,
-            "documents": ids 
+            "document_ids": ids,
+            "documents": documents
         })  
     
     demo_ephemeral_chat_history.add_ai_message(message_string)
