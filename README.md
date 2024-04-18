@@ -21,17 +21,18 @@ This app is a simple build-up from the [Couchbase Documentation](https://docs.co
 5. You'll also need an OPENAI account and a valid **OPENAI API Key**.
 
 8. Clone the repo to a local directory. Create a .env file with these variables: 
+
 ```
-    CB_USERNAME=db user you just created
-    CB_PASSWORD=db user password you just created
-    CB_HOSTNAME=from the connect tab of the cluster
-    OPENAI_API_KEY=your openai api key, 
-    CB_BUCKET_NAME=bucket name, 
-    CB_SCOPE_NAME=scope name, 
-    CB_COLLECTION_NAME=collection name, 
-    CB_VECTOR_INDEX_NAME=the fts index name, 
-    KEY_CONTEXT_FIELD=the string field you want to feed into LLM, 
-    EMBEDDING_FIELD=name of the embedding field
+CB_USERNAME=db user you just created
+CB_PASSWORD=db user password you just created
+CB_HOSTNAME=from the connect tab of the cluster
+OPENAI_API_KEY=your openai api key, 
+CB_BUCKET_NAME=bucket name, 
+CB_SCOPE_NAME=scope name, 
+CB_COLLECTION_NAME=collection name, 
+CB_VECTOR_INDEX_NAME=the fts index name, 
+KEY_CONTEXT_FIELD=the string field you want to feed into LLM, 
+EMBEDDING_FIELD=name of the embedding field
 ```
 
 
