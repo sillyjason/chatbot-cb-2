@@ -3,9 +3,9 @@
 
 Couchbase is a memory-first, performant NoSQL data platform providing services including kv, sql query, full-text & vector search, real-time analytics and mobile capabilities. You can build enterprise grade, scalable applications and innovate faster. 
 
-This app is a simple build-up from the [Couchbase Documentation](https://docs.couchbase.com/cloud/vector-search/vector-search.html) on using Couchbase as vector storage, borrowing from the great [LangChain](https://www.langchain.com/) library. This example is built with Capella, Couchbase's cloud data platform however the same examples works with Servers (version 7.6 or above) too.   
+This app is a simple build-up from the [Couchbase Documentation](https://docs.couchbase.com/cloud/vector-search/vector-search.html) on using Couchbase as both a vector storage and serverless computing platform, borrowing from the great [LangChain](https://www.langchain.com/) library. This example is built with Capella, Couchbase's cloud data platform however the same examples works with Servers (version 7.6 or above) too.   
 
-
+In this example we're building a MVP chatbot for internal product education for an insurance company with dummy data. Essentially you can build this for any company or any industry.
 
 
 **Set up**:  
@@ -34,6 +34,9 @@ CB_VECTOR_INDEX_NAME=the fts index name,
 KEY_CONTEXT_FIELD=the string field you want to feed into LLM, 
 EMBEDDING_FIELD=name of the embedding field
 ```
+
+9. if you running this on your local machine, skip this step; if you're running this on a VM such as EC2, open templates/index.html, find the line "var socket = io.connect('http://localhost:5000')" and replace "localhost" with the Public IPv4 DNS of your VM. 
+
 
 
 
