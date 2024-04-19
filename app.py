@@ -4,7 +4,6 @@ from langchain.memory import ChatMessageHistory
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from dotenv import load_dotenv
-from langchain_openai import OpenAIEmbeddings
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions
 from couchbase.auth import PasswordAuthenticator
@@ -148,7 +147,17 @@ def handle_message(msg):
         })  
     
     demo_ephemeral_chat_history.add_ai_message(message_string)
+
+@app.route('/create_embedding', methods=['POST'])
+def split_string():
+    data = request.get_json()
+    string = data.get('string', '')
     
+    openai_embedding = client_openai.embeddings.create(input = [string], model="text-embedding-ada-002").data[0].embedding
+    hugging_face_embedding = hf_embeddings.embed_query(string)
+    
+    return jsonify([openai_embedding, hugging_face_embedding])
+
     
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

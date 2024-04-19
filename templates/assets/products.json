@@ -1,0 +1,52 @@
+[
+    {
+        "product_id": "1",
+        "product_name": "Standard Term Life Insurance",
+        "product_overview": "Our Standard Term Life Insurance provides coverage for a specified term, typically 10, 20, or 30 years. It offers a death benefit to your beneficiaries if you pass away during the term of the policy.",
+        "product_eligibles": "To be eligible for this product, you must be between the ages of 18 and 65 and pass a medical underwriting process.",
+        "product_promotion_details": "For a limited time, new customers can enjoy a 10% discount on their first year's premium. Minimum premium: $100. Maximum premium: $1000.",
+        "product_details": "This policy offers coverage amounts ranging from $100,000 to $1,000,000. It can be renewed at the end of the term, but the premium may increase based on your age and health condition.",
+        "product_exclusions": "Exclusions may apply for death resulting from suicide within the first two years of the policy.",
+        "source": "https://couchbaselearn.mindtickle.com/sh/508984885982129687/assets/?id=467327786164435381"
+    },
+    {
+        "product_id": "2",
+        "product_name": "Whole Life Insurance",
+        "product_overview": "Our Whole Life Insurance provides lifelong coverage and includes a cash value component that grows over time. It offers a death benefit to your beneficiaries and can also serve as an investment vehicle.",
+        "product_eligibles": "To be eligible for this product, you must be between the ages of 18 and 80 and pass a medical underwriting process.",
+        "product_promotion_details": "For a limited time, new customers can receive a bonus cash value of $1,000 upon policy issuance. Minimum premium: $500. Maximum premium: $5000.",
+        "product_details": "This policy offers coverage amounts ranging from $50,000 to $5,000,000. The cash value component can be accessed through policy loans or withdrawals.",
+        "product_exclusions": "Exclusions may apply for death resulting from certain high-risk activities, such as skydiving or racing.",
+        "source": "https://couchbaselearn.mindtickle.com/sh/508984885982129687/assets/?id=467327786164435381"
+    },
+    {
+        "product_id": "3",
+        "product_name": "Universal Life Insurance",
+        "product_overview": "Our Universal Life Insurance provides flexible coverage and allows you to adjust your premium payments and death benefit over time. It offers a death benefit to your beneficiaries and a cash value component that can grow tax-deferred.",
+        "product_eligibles": "To be eligible for this product, you must be between the ages of 18 and 75 and pass a medical underwriting process.",
+        "product_promotion_details": "For a limited time, new customers can enjoy a 0% premium increase for the first five policy years. Minimum premium: $200. Maximum premium: $2000.",
+        "product_details": "This policy offers coverage amounts ranging from $100,000 to $2,000,000. You can adjust your premium payments and death benefit based on your changing needs.",
+        "product_exclusions": "Exclusions may apply for death resulting from acts of war or participation in illegal activities.",
+        "source": "https://couchbaselearn.mindtickle.com/sh/508984885982129687/assets/?id=467327786164435381"
+    },
+    {
+        "product_id": "4",
+        "product_name": "Indexed Universal Life Insurance",
+        "product_overview": "Our Indexed Universal Life Insurance provides flexible coverage and the potential for cash value growth based on the performance of a selected market index. It offers a death benefit to your beneficiaries and the opportunity to accumulate cash value.",
+        "product_eligibles": "To be eligible for this product, you must be between the ages of 18 and 70 and pass a medical underwriting process.",
+        "product_promotion_details": "For a limited time, new customers can receive a bonus cash value of 5% of the initial premium. Minimum premium: $1000. Maximum premium: $10000.",
+        "product_details": "This policy offers coverage amounts ranging from $250,000 to $5,000,000. The cash value component can grow based on the performance of a selected market index, with a guaranteed minimum interest rate.",
+        "product_exclusions": "Exclusions may apply for death resulting from self-inflicted injuries within the first two years of the policy.",
+        "source": "https://couchbaselearn.mindtickle.com/sh/508984885982129687/assets/?id=467327786164435381"
+    },
+    {
+        "product_id": "5",
+        "product_name": "Variable Universal Life Insurance",
+        "product_overview": "Our Variable Universal Life Insurance provides flexible coverage and the opportunity to invest in a variety of investment options. It offers a death benefit to your beneficiaries and the potential for cash value growth based on the performance of your selected investments.",
+        "product_eligibles": "To be eligible for this product, you must be between the ages of 18 and 65 and pass a medical underwriting process.",
+        "product_promotion_details": "For a limited time, new customers can receive a bonus cash value of 10% of the initial premium. Minimum premium: $5000. Maximum premium: $50000.",
+        "product_details": "This policy offers coverage amounts ranging from $500,000 to $10,000,000. The cash value component can be invested in a variety of investment options, such as stocks, bonds, and mutual funds.",
+        "product_exclusions": "Exclusions may apply for death resulting from acts of terrorism or participation in hazardous activities.",
+        "source": "https://couchbaselearn.mindtickle.com/sh/508984885982129687/assets/?id=467327786164435381"
+    }
+]
