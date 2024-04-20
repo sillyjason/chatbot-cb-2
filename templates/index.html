@@ -6,6 +6,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <style>
+        .star {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            background-image: url('/static/assets/star.svg');
+            background-size: cover;
+            margin: 0 3px;
+        }
+
+        .star.highlight {
+            filter: invert(70%) sepia(55%) saturate(2000%) hue-rotate(-20deg);
+        }
+
+        .star[data-value="1"]:hover,
+        .star[data-value="2"]:hover ~ .star[data-value="1"],
+        .star[data-value="3"]:hover ~ .star[data-value="2"],
+        .star[data-value="4"]:hover ~ .star[data-value="3"],
+        .star[data-value="5"]:hover ~ .star[data-value="4"] {
+            background-color: gold;
+        }
         #embedding_model_selection {
             padding: 10px;
             display: flex;
@@ -204,10 +224,55 @@
     <script>
         var socket = io.connect('http://localhost:5000');
         var lastTimestamp = null;
+
+        socket.on("bot_message_creation", function(bot_message_id) {
+            console.log("Bot message created with ID: " + bot_message_id);
+
+            var ratingDiv = document.createElement('div');
+            ratingDiv.id = 'rating-' + bot_message_id;
+            
+            // Generate 5 star elements and append them to the rating component
+            for (var i = 1; i <= 5; i++) {
+                var star = document.createElement('span');
+                star.className = 'star';
+                star.dataset.value = i;
+                ratingDiv.appendChild(star);
+            }
+
+            // Attach a click event listener to each star
+            ratingDiv.querySelectorAll('.star').forEach(function(star) {
+                star.addEventListener('click', function() {
+                    // Update the score of the rating component
+                    ratingDiv.dataset.score = star.dataset.value;
+
+                    // Log the new score
+                    console.log('New score for ' + ratingDiv.id + ': ' + ratingDiv.dataset.score);
+                    updateStarStyles(ratingDiv);
+                    socket.emit('rating', { 'bot_message_id': bot_message_id, 'score': ratingDiv.dataset.score
+                });
+            });
+
+            // Append the rating component to the body (or wherever you want it to be)
+            document.body.appendChild(ratingDiv);
+
+            $('#chatbox').append(ratingDiv);
+        })
+
+        })
+
+        function updateStarStyles(ratingDiv) {
+            var score = parseInt(ratingDiv.dataset.score);
+            ratingDiv.querySelectorAll('.star').forEach(function(star) {
+                if (parseInt(star.dataset.value) <= score) {
+                    star.classList.add('highlight')
+                } else {
+                    star.classList.remove('highlight')
+                }
+            });
+        }
+
         socket.on('message', function(msg) {
             const { timestamp, message_string, documents, document_ids } = msg;
-
-            console.log('documents 1', Object.keys(documents[0]))
 
             const found_documents_string = "Found documents from Couchbase: " 
 
@@ -235,11 +300,52 @@
             lastTimestamp = timestamp;
             $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
         });
+        
         $('#send').click(function() {
+            // Log client information
+            
+            var userAgent = navigator.userAgent;
+            console.log("User Agent: " + userAgent);
+            var browserType = "Unknown";
+            if (userAgent.indexOf("Chrome") > -1) {
+                browserType = "Chrome";
+            } else if (userAgent.indexOf("Firefox") > -1) {
+                browserType = "Firefox";
+            } else if (userAgent.indexOf("Safari") > -1) {
+                browserType = "Safari";
+            } else if (userAgent.indexOf("Opera") > -1) {
+                browserType = "Opera";
+            } else if (userAgent.indexOf("Edge") > -1) {
+                browserType = "Edge";
+            } else if (userAgent.indexOf("IE") > -1) {
+                browserType = "Internet Explorer";
+            }
+
+            var deviceType = "Unknown";
+            if (userAgent.indexOf("Mobile") > -1) {
+                deviceType = "Mobile";
+            } else if (userAgent.indexOf("Tablet") > -1) {
+                deviceType = "Tablet";
+            } else if (userAgent.indexOf("Windows") > -1) {
+                deviceType = "Desktop";
+            } else if (userAgent.indexOf("Macintosh") > -1) {
+                deviceType = "Desktop";
+            } else if (userAgent.indexOf("Linux") > -1) {
+                deviceType = "Desktop";
+            }
+            
+            //send message to server
             var msg = $('#message').val();
             $('#message').val('');
             $('#chatbox').append('<p class="user-message">' + msg + '</p>');
-            socket.emit('message', msg);
+
+            const message_to_send = {
+                query: msg,
+                browserType: browserType,
+                deviceType: deviceType
+            }
+
+            socket.emit('message', message_to_send);
             $('#chatbox').scrollTop($('#chatbox')[0].scrollHeight);
         });
     </script>

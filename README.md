@@ -18,7 +18,7 @@ In this example we're building a MVP chatbot for internal product education for 
 
 4. Whitelist IP address, create db user credentials, get connection string - the usuall goodies.
 
-5. You'll also need an OPENAI account and a valid **OPENAI API Key**.
+5. Get an OPENAI_API_KEY, ANTHROPIC_API_KEY, HUGGING_FACE_API_KEY from respective providers.
 
 8. Clone the repo to a local directory. Create a .env file with these variables: 
 

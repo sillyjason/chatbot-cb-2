@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 import os 
 import time
 from langchain_core.documents import Document
-from couchbase_setup import cb_vector_search
+from couchbase_setup import cb_vector_search, insert_user_message, insert_bot_message, update_bot_message_rating
 from langchain.memory import ChatMessageHistory
-from llm import create_openai_embeddings, create_hf_embeddings, generate_query_transform_prompt, generate_document_chain, chat_claude, chat_openai
+from llm import create_openai_embeddings, create_hf_embeddings, generate_query_transform_prompt, generate_document_chain
 
 
 load_dotenv()
@@ -35,19 +35,28 @@ def update_embedding_model_toggle():
     embedding_model_toggle = request.json['selectedModel']
     return jsonify(success=True)
 
-@socketio.on('message')
-def handle_message(msg):
-    
-    print("current chat model toggle: ", chat_model_toggle)
-    
-    demo_ephemeral_chat_history.add_user_message(msg)
 
-    #0. setup variables
-    message_string = ""   
-    timestamp = int(time.time())
+@socketio.on('rating')
+def handle_rating(rating_data):
+    bot_message_id = rating_data['bot_message_id']
+    score= rating_data['score']
+    
+    update_bot_message_rating(bot_message_id, score)
+    
+    
+@socketio.on('message')
+def handle_message(msg_to_process):
+    
+    query = msg_to_process['query']
+    browserType = msg_to_process['browserType']
+    deviceType = msg_to_process['deviceType']
+    
+    #0. add user message, both locally and to couchbase
+    demo_ephemeral_chat_history.add_user_message(query)
     
     #1. incorporating the chat history together with the new questions to generate an independent prompt
     new_query = generate_query_transform_prompt(chat_model_toggle, demo_ephemeral_chat_history.messages)
+    user_message_uuid = insert_user_message(query, new_query, deviceType, browserType)
     
     #2. turn it into an embedding
     if embedding_model_toggle == "model1":
@@ -67,18 +76,21 @@ def handle_message(msg):
     result = cb_vector_search(embedding_field, vector, key_context_field)
     
     #4. parsing the results
-    ids = []
+    product_ids = []
     additional_context = ""
     documents = []
     
     for row in result.rows():
-        ids.append(row.id)
+        product_ids.append(row.id)
         
         additional_context += row.fields[key_context_field] + "\n"
         documents.append(row.fields)
     
     #5. streaming
     document_chain = generate_document_chain(chat_model_toggle)
+    
+    message_string = ""   
+    timestamp = int(time.time())
     
     for chunk in document_chain.stream({
         "input": new_query, 
@@ -89,11 +101,17 @@ def handle_message(msg):
         emit('message', {
             "timestamp": timestamp, 
             "message_string": message_string,
-            "document_ids": ids,
+            "document_ids": product_ids,
             "documents": documents
-        })  
-    
+        }) 
+        
+    #6. add bot message, both locally and to couchbase
     demo_ephemeral_chat_history.add_ai_message(message_string)
+    bot_message_id = insert_bot_message(message_string, user_message_uuid, chat_model_toggle, product_ids)
+    
+    if bot_message_id is not None:
+        emit('bot_message_creation', bot_message_id)
+    
 
 @app.route('/create_embedding', methods=['POST'])
 def split_string():
