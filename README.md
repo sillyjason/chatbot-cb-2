@@ -8,35 +8,55 @@ This app is a simple build-up from the [Couchbase Documentation](https://docs.co
 In this example we're building a MVP chatbot for internal product education for an insurance company with dummy data. Essentially you can build this for any company or any industry.
 
 
-**Set up**:  
 
-1. On [Couchbase Capella](https://cloud.couchbase.com/sign-in), set up a cluster **versioned 7.6** with at least Data and Search services enabled.
+**Couchbase Setup**:  
 
-2. Create bucket with embedding in this cluter. As a starter, follow the instruction on this [Couchbase documentation](https://docs.couchbase.com/cloud/vector-search/create-vector-search-index-ui.html) to create the "vector-sample" bucket, "color" scope, "rgb" and "rgb_questions" collections. Download the color_data_2vectors.zip file and upload them into the created collections.
+1. On [Couchbase Capella](https://cloud.couchbase.com/sign-in), set up a cluster **versioned 7.6** with at least Data, Index, Query, Search, Eventing and Analytics services enabled.
 
-3. Create the Vector Search Index. 
+2. Create the following bucket structure (bucket - scope - [collections]): 
+    Chats - _default -  [_default & bot] 
+    insurance-products - _default - _default
+    meta - _default - _default
 
-4. Whitelist IP address, create db user credentials, get connection string - the usuall goodies.
+3. Import the eventing_function.json file under templates/assets to create a Couchbase Eventing. Save the function without deploying it as we'll made modifications once the VM is set up.
+In step 2 URL binding, replace the URL with the correct VM DNS record that we'll create below. Leave the 
 
-5. Get an OPENAI_API_KEY, ANTHROPIC_API_KEY, HUGGING_FACE_API_KEY from respective providers.
+4. Load products.json under templates/assets into collection `insurance-products`.`_default`.`_default`. Use "product-id" as document id. 
 
-8. Clone the repo to a local directory. Create a .env file with these variables: 
+5. Create the Vector Search Index:
+    - bucket: insurance-products
+    - scope: _default
+    - map chield field:  
+
+4. Whitelist IP address, create db user credentials, notice connection string.
+
+
+
+
+**LLM Setup**
+Do run this demo you'll need api keys from OpenAI, Anthropic, and Hugging Face. Once you have these 3 keys you're good to go here: 
+OPENAI_API_KEY, ANTHROPIC_API_KEY, HUGGING_FACE_API_KEY
+
+
+
+**VM Setup** 
+
+1. Set up VM. I'm using AWS EC2 as an example. SSH into the machine, Run the startup script under templates/assets to clone this repo and set up dependencies 
+
+2. Open templates/index.html, find the line "var socket = io.connect('http://localhost:5000')" and replace "localhost" with the Public IPv4 DNS of your VM. 
+
+3. Create a .env file with these variables.
 
 ```
-CB_USERNAME=db user you just created
-CB_PASSWORD=db user password you just created
-CB_HOSTNAME=from the connect tab of the cluster
-OPENAI_API_KEY=your openai api key, 
-CB_BUCKET_NAME=bucket name, 
-CB_SCOPE_NAME=scope name, 
-CB_COLLECTION_NAME=collection name, 
-CB_VECTOR_INDEX_NAME=the fts index name, 
-KEY_CONTEXT_FIELD=the string field you want to feed into LLM, 
-EMBEDDING_FIELD=name of the embedding field
+CB_USERNAME=
+CB_PASSWORD=
+CB_HOSTNAME=
+CB_BUCKET_NAME=insurance-products
+CB_SCOPE_NAME=_default
+CB_COLLECTION_NAME=_default
+CB_VECTOR_INDEX_NAME=product-index
+KEY_CONTEXT_FIELD=assembled_for_embedding
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+HUGGING_FACE_API_KEY=
 ```
-
-9. if you running this on your local machine, skip this step; if you're running this on a VM such as EC2, open templates/index.html, find the line "var socket = io.connect('http://localhost:5000')" and replace "localhost" with the Public IPv4 DNS of your VM. 
-
-
-
-

@@ -13,7 +13,7 @@
             ],
             "curl": [
                 {
-                    "hostname": "http://ec2-13-229-92-40.ap-southeast-1.compute.amazonaws.com:5111",
+                    "hostname": "http://ec2-13-229-92-40.ap-southeast-1.compute.amazonaws.com:5000",
                     "value": "embedding_endpoint",
                     "auth_type": "no-auth",
                     "username": "",
