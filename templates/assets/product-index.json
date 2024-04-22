@@ -1,0 +1,142 @@
+{
+  "type": "fulltext-index",
+  "name": "product-index",
+  "uuid": "6862526b6b0d597f",
+  "sourceType": "gocbcore",
+  "sourceName": "insurance-products",
+  "sourceUUID": "4dcf9b831bacd418bec3a5afd3c4955f",
+  "planParams": {
+    "maxPartitionsPerPIndex": 1024,
+    "indexPartitions": 1
+  },
+  "params": {
+    "doc_config": {
+      "docid_prefix_delim": "",
+      "docid_regexp": "",
+      "mode": "scope.collection.type_field",
+      "type_field": "type"
+    },
+    "mapping": {
+      "analysis": {},
+      "default_analyzer": "standard",
+      "default_datetime_parser": "dateTimeOptional",
+      "default_field": "_all",
+      "default_mapping": {
+        "dynamic": false,
+        "enabled": false
+      },
+      "default_type": "_default",
+      "docvalues_dynamic": false,
+      "index_dynamic": false,
+      "store_dynamic": false,
+      "type_field": "_type",
+      "types": {
+        "_default._default": {
+          "dynamic": false,
+          "enabled": true,
+          "properties": {
+            "assembled_for_embedding": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "analyzer": "en",
+                  "include_in_all": true,
+                  "index": true,
+                  "name": "assembled_for_embedding",
+                  "store": true,
+                  "type": "text"
+                }
+              ]
+            },
+            "embedding": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "dims": 1536,
+                  "index": true,
+                  "name": "embedding",
+                  "similarity": "dot_product",
+                  "type": "vector",
+                  "vector_index_optimized_for": "recall"
+                }
+              ]
+            },
+            "embedding_hugging_face": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "dims": 384,
+                  "index": true,
+                  "name": "embedding_hugging_face",
+                  "similarity": "dot_product",
+                  "type": "vector",
+                  "vector_index_optimized_for": "recall"
+                }
+              ]
+            },
+            "product_details": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "analyzer": "en",
+                  "include_in_all": true,
+                  "index": true,
+                  "name": "product_details",
+                  "type": "text"
+                }
+              ]
+            },
+            "product_name": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "analyzer": "en",
+                  "index": true,
+                  "name": "product_name",
+                  "type": "text"
+                }
+              ]
+            },
+            "product_overview": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "analyzer": "en",
+                  "include_in_all": true,
+                  "include_term_vectors": true,
+                  "index": true,
+                  "name": "product_overview",
+                  "type": "text"
+                }
+              ]
+            },
+            "source": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "analyzer": "en",
+                  "index": true,
+                  "name": "source",
+                  "store": true,
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "store": {
+      "indexType": "scorch",
+      "segmentVersion": 16
+    }
+  },
+  "sourceParams": {}
+}

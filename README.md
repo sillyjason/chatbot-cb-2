@@ -9,33 +9,33 @@ In this example we're building a MVP chatbot for internal product education for 
 
 
 
-**Couchbase Setup**:  
+**Couchbase Setup**  
 
-1. On [Couchbase Capella](https://cloud.couchbase.com/sign-in), set up a cluster **versioned 7.6** with at least Data, Index, Query, Search, Eventing and Analytics services enabled.
+1. On [Couchbase Capella](https://cloud.couchbase.com/sign-in), set up a cluster **versioned 7.6** with Data, Index, Query, Search, Eventing and Analytics services enabled. Recommended topology: 
+    Data * 3 with 4core 16ram; 
+    Analytics * 2 with 4core 16ram;
+    [Index, Query, Search, Eventing] * 2 with 4core 16ram
 
 2. Create the following bucket structure (bucket - scope - [collections]): 
-    Chats - _default -  [_default & bot] 
-    insurance-products - _default - _default
-    meta - _default - _default
+    insurance-products(1000MiB of RAM) - _default - _default
+    meta(1000MiB of RAM)  - _default - _default
+    Chats(rest of RAM)  - _default -  [_default & bot] 
 
 3. Import the eventing_function.json file under templates/assets to create a Couchbase Eventing. Save the function without deploying it as we'll made modifications once the VM is set up.
-In step 2 URL binding, replace the URL with the correct VM DNS record that we'll create below. Leave the 
 
-4. Load products.json under templates/assets into collection `insurance-products`.`_default`.`_default`. Use "product-id" as document id. 
+4. Import the product-index.json under templates/assets to create the search index, which will include the vectors and other relevant fields
 
-5. Create the Vector Search Index:
-    - bucket: insurance-products
-    - scope: _default
-    - map chield field:  
 
-4. Whitelist IP address, create db user credentials, notice connection string.
+5. Whitelist IP address, create db user credentials, note down the connection string and your user credentials.
 
 
 
 
 **LLM Setup**
-Do run this demo you'll need api keys from OpenAI, Anthropic, and Hugging Face. Once you have these 3 keys you're good to go here: 
+
+To run this demo you'll need api keys from OpenAI, Anthropic, and Hugging Face. Once you have these 3 keys you're good to go here: 
 OPENAI_API_KEY, ANTHROPIC_API_KEY, HUGGING_FACE_API_KEY
+
 
 
 
@@ -43,7 +43,7 @@ OPENAI_API_KEY, ANTHROPIC_API_KEY, HUGGING_FACE_API_KEY
 
 1. Set up VM. I'm using AWS EC2 as an example. SSH into the machine, Run the startup script under templates/assets to clone this repo and set up dependencies 
 
-2. Open templates/index.html, find the line "var socket = io.connect('http://localhost:5000')" and replace "localhost" with the Public IPv4 DNS of your VM. 
+2. Enter the directory of the project. Open templates/index.html, find the line "var socket = io.connect('http://localhost:5000')" and replace "localhost" with the Public IPv4 DNS of your VM. 
 
 3. Create a .env file with these variables.
 
@@ -60,3 +60,11 @@ OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 HUGGING_FACE_API_KEY=
 ```
+
+
+
+**Let's Run it!**
+
+1. Copy the DNS record again, and go back to Couchbse cluster. In the step 2 "Binding" of the Eventing we just created, update the URL with the DNS record so it looks something like this: http://{DNS record}:5000. Save and publish the function. 
+
+2. Load products.json under templates/assets into collection `insurance-products`.`_default`.`_default`. Use "product-id" as document id. 
