@@ -56,7 +56,6 @@ def handle_message(msg_to_process):
     
     #1. incorporating the chat history together with the new questions to generate an independent prompt
     new_query = generate_query_transform_prompt(chat_model_toggle, demo_ephemeral_chat_history.messages)
-    user_message_uuid = insert_user_message(query, new_query, deviceType, browserType)
     
     #2. turn it into an embedding
     if embedding_model_toggle == "model1":
@@ -107,6 +106,7 @@ def handle_message(msg_to_process):
         
     #6. add bot message, both locally and to couchbase
     demo_ephemeral_chat_history.add_ai_message(message_string)
+    user_message_uuid = insert_user_message(query, new_query, deviceType, browserType)
     bot_message_id = insert_bot_message(message_string, user_message_uuid, chat_model_toggle, product_ids)
     
     if bot_message_id is not None:

@@ -45,7 +45,7 @@ OPENAI_API_KEY, ANTHROPIC_API_KEY, HUGGING_FACE_API_KEY
 
 2. Enter the directory of the project. Open templates/index.html, find the line "var socket = io.connect('http://localhost:5000')" and replace "localhost" with the Public IPv4 DNS of your VM. 
 
-3. Create a .env file with these variables.
+3. Create a .env file with these variables. Complete CB_USERNAME, CB_PASSWORD, CB_HOSTNAME with values from Couchbase setup steps.
 
 ```
 CB_USERNAME=
@@ -61,10 +61,16 @@ ANTHROPIC_API_KEY=
 HUGGING_FACE_API_KEY=
 ```
 
+4. Run python3 app.py
+
 
 
 **Let's Run it!**
 
-1. Copy the DNS record again, and go back to Couchbse cluster. In the step 2 "Binding" of the Eventing we just created, update the URL with the DNS record so it looks something like this: http://{DNS record}:5000. Save and publish the function. 
+1. Copy the DNS record again, and go back to Couchbse cluster. In the step 2 "Binding" of the Eventing we just created, update the URL with the DNS record so it looks something like this: http://{DNS record}:5000. Save and deploy the function. 
 
-2. Load products.json under templates/assets into collection `insurance-products`.`_default`.`_default`. Use "product-id" as document id. 
+2. Let's see automatic embedding with Eventing in action. Load products.json under templates/assets into collection `insurance-products`.`_default`.`_default`. Use "product-id" as document id. Upon import completion, you should see the vectors added automatically. 
+
+3. Open your browser and enter "{your VM DNS record}:5000". You should see the chatbot interface. 
+
+4. Throw some questions, switch between OpenAI and Claude LLMs, or switch between 2 sets of embeddings (both embeddings have been added)

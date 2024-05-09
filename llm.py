@@ -8,9 +8,9 @@ from langchain_anthropic import ChatAnthropic
 from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 
 
-chat_openai = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.9)    
+chat_openai = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.2)    
 
-chat_claude = ChatAnthropic(temperature=0.9, api_key=os.getenv('ANTHROPIC_API_KEY'), model_name="claude-3-opus-20240229")
+chat_claude = ChatAnthropic(temperature=0.2, api_key=os.getenv('ANTHROPIC_API_KEY'), model_name="claude-3-haiku-20240307")
 
 client_openai = OpenAI()
 
@@ -50,6 +50,8 @@ def generate_query_transform_prompt(chat_model_toggle, messages):
         chat_model = chat_claude
     
     query_transformation_chain = query_transform_prompt | chat_model
+    
+    print("generating transformed query...")
     return query_transformation_chain.invoke({"messages": messages}).content 
     
 
