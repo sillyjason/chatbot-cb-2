@@ -20,7 +20,6 @@ collection = scope.collection(os.getenv("CB_COLLECTION_NAME"))
 search_index = os.getenv("CB_VECTOR_INDEX_NAME")
 
 
-
 def cb_vector_search(embedding_field, vector, key_context_field): 
     
     search_req = search.SearchRequest.create(search.MatchNoneQuery()).with_vector_search(

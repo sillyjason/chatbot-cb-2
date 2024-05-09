@@ -7,7 +7,8 @@ from langchain_core.documents import Document
 from couchbase_setup import cb_vector_search, insert_user_message, insert_bot_message, update_bot_message_rating
 from langchain.memory import ChatMessageHistory
 from llm import create_openai_embeddings, create_hf_embeddings, generate_query_transform_prompt, generate_document_chain
-
+from data_processor.data_reformat import data_reformat
+from data_processor.metadata_tag import tag_metadata
 
 load_dotenv()
 
@@ -123,6 +124,27 @@ def split_string():
     
     return jsonify([openai_embedding, hugging_face_embedding])
 
+
+@app.route('/data_reformatting', methods=['POST'])
+def data_reformatting():
+    data = request.get_json()
     
+    # Process "last_update" field
+    processed_data = data_reformat(data)
+
+    return jsonify(processed_data)
+
+
+@app.route('/metadata_tag', methods=['POST'])
+def metadata_tag():
+    data = request.get_json()
+    
+    # Process "last_update" field
+    type = tag_metadata(data)
+
+    return jsonify(type)
+
+    
+
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
