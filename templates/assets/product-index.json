@@ -3,7 +3,7 @@
   "name": "product-index",
   "uuid": "6862526b6b0d597f",
   "sourceType": "gocbcore",
-  "sourceName": "insurance-products",
+  "sourceName": "main",
   "sourceUUID": "4dcf9b831bacd418bec3a5afd3c4955f",
   "planParams": {
     "maxPartitionsPerPIndex": 1024,
@@ -25,13 +25,13 @@
         "dynamic": false,
         "enabled": false
       },
-      "default_type": "_default",
+      "default_type": "data",
       "docvalues_dynamic": false,
       "index_dynamic": false,
       "store_dynamic": false,
       "type_field": "_type",
       "types": {
-        "_default._default": {
+        "data.products": {
           "dynamic": false,
           "enabled": true,
           "properties": {
