@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os 
 import time
 from langchain_core.documents import Document
-from couchbase_setup import cb_vector_search, insert_user_message, insert_bot_message, update_bot_message_rating
+from cb_setup.couchbase import cb_vector_search, insert_user_message, insert_bot_message, update_bot_message_rating
 from langchain.memory import ChatMessageHistory
 from llm import create_openai_embeddings, create_hf_embeddings, generate_query_transform_prompt, generate_document_chain
 from data_processor.data_reformat import data_reformat

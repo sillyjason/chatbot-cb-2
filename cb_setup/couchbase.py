@@ -9,11 +9,24 @@ import os
 import uuid
 import datetime
 import couchbase.subdocument as SD
+from datetime import timedelta
 
 load_dotenv()
 
-pa = PasswordAuthenticator(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD"))
-cluster = Cluster(os.getenv("CB_HOSTNAME") + "/?ssl=no_verify", ClusterOptions(pa))
+
+endpoint = os.getenv("CB_HOSTNAME")
+auth = PasswordAuthenticator(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD"))
+options = ClusterOptions(auth)
+# Sets a pre-configured profile called "wan_development" to help avoid latency issues
+# when accessing Capella from a different Wide Area Network
+# or Availability Zone(e.g. your laptop).
+options.apply_profile('wan_development')
+cluster = Cluster('couchbases://{}'.format(endpoint), options)
+
+# Wait until the cluster is ready for use.
+cluster.wait_until_ready(timedelta(seconds=5))
+
+
 bucket = cluster.bucket(os.getenv("CB_BUCKET_NAME"))
 scope = bucket.scope(os.getenv("CB_SCOPE_NAME"))
 collection = scope.collection(os.getenv("CB_COLLECTION_NAME"))
