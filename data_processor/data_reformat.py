@@ -18,7 +18,7 @@ def data_reformat(data):
                     print(f"Invalid date format for 'last_update': {last_update}")
 
     # Process "product_promotion_details", "product_details", "product_exclusions" fields
-    for field in ['product_promotion_details', 'product_details', 'product_exclusions']:
+    for field in ['product_promotion_details', 'product_details', 'product_exclusions', 'content']:
         value = data.get(field, None)
         if value is not None and isinstance(value, str):
             # Remove line breaks and extra spaces
