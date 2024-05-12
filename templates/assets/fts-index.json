@@ -1,10 +1,10 @@
 {
   "type": "fulltext-index",
-  "name": "product-index",
-  "uuid": "6862526b6b0d597f",
+  "name": "main.data.embedding-index",
+  "uuid": "139a13bad9ef07b3",
   "sourceType": "gocbcore",
   "sourceName": "main",
-  "sourceUUID": "4dcf9b831bacd418bec3a5afd3c4955f",
+  "sourceUUID": "0f4ba548d805fb86b5d41dd7bc5d3a9b",
   "planParams": {
     "maxPartitionsPerPIndex": 1024,
     "indexPartitions": 1
@@ -31,6 +31,70 @@
       "store_dynamic": false,
       "type_field": "_type",
       "types": {
+        "data.policies": {
+          "dynamic": false,
+          "enabled": true,
+          "properties": {
+            "assembled_for_embedding": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "docvalues": true,
+                  "include_in_all": true,
+                  "include_term_vectors": true,
+                  "index": true,
+                  "name": "assembled_for_embedding",
+                  "store": true,
+                  "type": "text"
+                }
+              ]
+            },
+            "embedding": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "dims": 1536,
+                  "index": true,
+                  "name": "embedding",
+                  "similarity": "dot_product",
+                  "type": "vector",
+                  "vector_index_optimized_for": "recall"
+                }
+              ]
+            },
+            "embedding_hugging_face": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "dims": 384,
+                  "index": true,
+                  "name": "embedding_hugging_face",
+                  "similarity": "dot_product",
+                  "type": "vector",
+                  "vector_index_optimized_for": "recall"
+                }
+              ]
+            },
+            "from": {
+              "dynamic": false,
+              "enabled": true,
+              "fields": [
+                {
+                  "docvalues": true,
+                  "include_in_all": true,
+                  "include_term_vectors": true,
+                  "index": true,
+                  "name": "from",
+                  "store": true,
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
         "data.products": {
           "dynamic": false,
           "enabled": true,

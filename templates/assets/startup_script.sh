@@ -12,10 +12,6 @@ cat > .env <<- EOF
 CB_USERNAME=
 CB_PASSWORD=
 CB_HOSTNAME=
-CB_BUCKET_NAME=insurance-products
-CB_SCOPE_NAME=_default
-CB_COLLECTION_NAME=_default
-CB_VECTOR_INDEX_NAME=product-index
 KEY_CONTEXT_FIELD=assembled_for_embedding
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=

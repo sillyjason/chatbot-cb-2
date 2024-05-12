@@ -274,27 +274,26 @@
         socket.on('message', function(msg) {
             const { timestamp, message_string, documents, document_ids } = msg;
 
-            const found_documents_string = "Found documents from Couchbase: " 
+            const found_documents_string = "Extracted from these products or sources:" 
 
             if (timestamp === lastTimestamp) {
-                $('.found-documents:last').text(found_documents_string);
                 $('.system-message:last').text(message_string);
+                $('.found-documents:last').text(found_documents_string);
                 $('.found-document-ids:last').html(documentTexts);
             } else {
-                $('#chatbox').append('<p class="found-documents">' + found_documents_string + '</p>');
-                
                 var documentTexts = '';
                 for (var i = 0; i < document_ids.length; i++) {
                     var documentId = document_ids[i];
                     var document = documents[i];
-                    
-                    var documentText = document.source ? '<a href="' + document.source + '">' + documentId + '</a>' : documentId;
+
+                    var documentText = document.from ? document.from : document.source ? '<a href="' + document.source + '">' + documentId + '</a>' : documentId;
                     documentTexts += documentText + ' ';
                 }
-                $('#chatbox').append('<p class="found-document-ids">' + documentTexts + '</p>');
                 $('#chatbox').append('<p class="system-message">' + message_string + '</p>');
-                $('.found-documents:last').text(found_documents_string);
+                $('#chatbox').append('<p class="found-documents">' + found_documents_string + '</p>');
+                $('#chatbox').append('<p class="found-document-ids">' + documentTexts + '</p>');
                 $('.system-message:last').text(message_string);
+                $('.found-documents:last').text(found_documents_string);
                 $('.found-document-ids:last').html(documentTexts);
             }
             lastTimestamp = timestamp;

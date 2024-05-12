@@ -27,22 +27,18 @@ cluster = Cluster('couchbases://{}'.format(endpoint), options)
 cluster.wait_until_ready(timedelta(seconds=5))
 
 
-bucket = cluster.bucket(os.getenv("CB_BUCKET_NAME"))
-scope = bucket.scope(os.getenv("CB_SCOPE_NAME"))
-collection = scope.collection(os.getenv("CB_COLLECTION_NAME"))
-search_index = os.getenv("CB_VECTOR_INDEX_NAME")
-
-
 def cb_vector_search(embedding_field, vector, key_context_field): 
-    
+    bucket = cluster.bucket("main")
+    scope = bucket.scope("data")
+    search_index = "embedding-index"
     search_req = search.SearchRequest.create(search.MatchNoneQuery()).with_vector_search(
     VectorSearch.from_vector_query(VectorQuery(embedding_field, vector, num_candidates=3)))
-    return scope.search(search_index, search_req, SearchOptions(limit=13,fields=[key_context_field, "source"]))
+    return scope.search(search_index, search_req, SearchOptions(limit=13,fields=[key_context_field, "source", "from"]))
 
 
 def insert_user_message(query, transformed_query, deviceType, browserType): 
     
-    chat_collection = cluster.bucket("chats").scope("_default").collection("_default")   
+    chat_collection = cluster.bucket("main").scope("chats").collection("human")   
     
     try:
         uuid_to_insert = str(generate_uuid())
@@ -72,7 +68,7 @@ def insert_user_message(query, transformed_query, deviceType, browserType):
 
 
 def insert_bot_message(message, user_msg_id, chat_model, product_ids): 
-    chat_collection = cluster.bucket("chats").scope("_default").collection("bot")   
+    chat_collection = cluster.bucket("main").scope("chats").collection("bot")   
     
     try:
         uuid_to_insert = str(generate_uuid())
@@ -100,7 +96,7 @@ def insert_bot_message(message, user_msg_id, chat_model, product_ids):
 
 def update_bot_message_rating(bot_msg_id, rating):
     print("UPDATING RATING", bot_msg_id, rating)
-    chat_collection = cluster.bucket("chats").scope("_default").collection("bot")   
+    chat_collection = cluster.bucket("main").scope("chats").collection("bot")   
     
     try:        
         chat_collection.mutate_in(bot_msg_id, [SD.upsert("rating", rating)])
