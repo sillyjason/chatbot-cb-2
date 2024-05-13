@@ -1,1 +1,57 @@
-[{"appcode":"function OnUpdate(doc, meta) {\n    const docid = meta.id\n    log(\"Doc created/updated\", docid);\n\n    var request = {\n        path: '/data_reformatting',\n        params: {\n        },\n        body: doc\n    };\n\n    var response = curl('POST', endpoint, request);\n\n    if (response.status == 200) {\n        log('success!')\n        var data = response.body;\n        target[docid] = data\n    }\n\n    else { \n        log(\"Failed to create profile: \" + response.status + \" \" + response.body)\n    }\n\n    return \n}\n\nfunction OnDelete(meta, options) {\n    log(\"Doc deleted/expired\", meta.id);\n}","depcfg":{"buckets":[{"alias":"target","bucket_name":"main","scope_name":"raw","collection_name":"formatted","access":"rw"}],"curl":[{"hostname":"http://ec2-13-215-49-139.ap-southeast-1.compute.amazonaws.com:5000","value":"endpoint","auth_type":"no-auth","username":"","password":"*****","bearer_key":"*****","allow_cookies":false,"validate_ssl_certificate":false}],"source_bucket":"main","source_scope":"raw","source_collection":"raw","metadata_bucket":"meta","metadata_scope":"_default","metadata_collection":"_default"},"version":"","enforce_schema":false,"handleruuid":632672485,"function_instance_id":"C*OY&","appname":"reformatting","settings":{"dcp_stream_boundary":"everything","deadline_timeout":62,"deployment_status":true,"description":"","execution_timeout":60,"language_compatibility":"6.6.2","log_level":"INFO","n1ql_consistency":"none","processing_status":true,"timer_context_size":1024,"user_prefix":"eventing","worker_count":10},"function_scope":{"bucket":"*","scope":"*"}}]
+[
+    {
+        "appcode": "function OnUpdate(doc, meta) {\n    const docid = meta.id\n    log(\"Doc created/updated\", docid);\n\n    var request = {\n        path: '/data_reformatting',\n        params: {\n        },\n        body: doc\n    };\n\n    var response = curl('POST', endpoint, request);\n\n    if (response.status == 200) {\n        log('success!')\n        var data = response.body;\n        target[docid] = data\n    }\n\n    else { \n        log(\"Failed to create profile: \" + response.status + \" \" + response.body)\n    }\n\n    return \n}\n\nfunction OnDelete(meta, options) {\n    log(\"Doc deleted/expired\", meta.id);\n}",
+        "depcfg": {
+            "buckets": [
+                {
+                    "alias": "target",
+                    "bucket_name": "main",
+                    "scope_name": "raw",
+                    "collection_name": "formatted",
+                    "access": "rw"
+                }
+            ],
+            "curl": [
+                {
+                    "hostname": "http://ec2-13-215-49-139.ap-southeast-1.compute.amazonaws.com:5000",
+                    "value": "endpoint",
+                    "auth_type": "no-auth",
+                    "username": "",
+                    "password": "*****",
+                    "bearer_key": "*****",
+                    "allow_cookies": false,
+                    "validate_ssl_certificate": false
+                }
+            ],
+            "source_bucket": "main",
+            "source_scope": "raw",
+            "source_collection": "raw",
+            "metadata_bucket": "meta",
+            "metadata_scope": "_default",
+            "metadata_collection": "_default"
+        },
+        "version": "",
+        "enforce_schema": false,
+        "handleruuid": 632672485,
+        "function_instance_id": "C*OY&",
+        "appname": "reformatting",
+        "settings": {
+            "dcp_stream_boundary": "everything",
+            "deadline_timeout": 62,
+            "deployment_status": true,
+            "description": "",
+            "execution_timeout": 60,
+            "language_compatibility": "6.6.2",
+            "log_level": "INFO",
+            "n1ql_consistency": "none",
+            "processing_status": true,
+            "timer_context_size": 1024,
+            "user_prefix": "eventing",
+            "worker_count": 10
+        },
+        "function_scope": {
+            "bucket": "*",
+            "scope": "*"
+        }
+    }
+]

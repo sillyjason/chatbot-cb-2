@@ -1,1 +1,57 @@
-[{"appcode":"function OnUpdate(doc, meta) {\n    const docid = meta.id\n    log(\"Doc created/updated\", docid);\n\n    //check if the document is already embedded\n    const { \n        checked,\n        embedding,\n        embedding_hugging_face\n    } = doc \n\n    if ( checked || embedding != null || embedding_hugging_face != null ) {\n        log(\"document already embedded, returning\")\n        return \n    }\n\n    //get collection name\n    const collection_name = meta.keyspace.collection_name\n\n    //assemble the field for embedding\n    let assembled_for_embedding = null \n\n    //process collection products\n    if (collection_name == \"products\") {\n        log(\"document not in products collection, returning\")\n\n        const { \n            product_name,\n            product_overview,\n            product_promotion_details,\n            product_eligibles,\n            product_details,\n            product_exclusions,\n        } = doc \n    \n        assembled_for_embedding = [product_name, product_overview, product_promotion_details, product_eligibles, product_details, product_exclusions].join(\".  \")    \n    } \n\n    //process collection policies\n    else if (collection_name == \"policies\") {\n        const { content } = doc\n        assembled_for_embedding = content \n    }\n    \n    //return if nothing to process \n    if ( assembled_for_embedding == null ) {\n        log(\"no fields to embed, returning\")\n        return \n    }   \n\n    log(\"assembled_for_embedding: \", assembled_for_embedding)\n\n    var request = {\n        path: '/create_embedding',\n        params: {\n        },\n        body: {\n            \"string\": assembled_for_embedding,\n        }\n    };\n\n    var response = curl('POST', embedding_endpoint, request);\n\n    if (response.status == 200) {\n        log('embedding successully generated..')\n        var data = response.body;\n        const [openai_embedding, huggingface_embedding] = data\n\n        let newDoc = doc \n\n        newDoc['assembled_for_embedding'] = assembled_for_embedding\n        newDoc['embedding'] = openai_embedding\n        newDoc['embedding_hugging_face'] = huggingface_embedding\n        newDoc['checked'] = true\n\n        couchbase.upsert(target,{\n            \"id\": docid, \n            \"keyspace\": {\n                \"bucket_name\": \"main\",\n                \"scope_name\": \"data\",\n                \"collection_name\": collection_name\n            }}, \n            newDoc\n        )\n    }\n\n    else { \n        log(\"Failed to create profile: \" + response.status + \" \" + response.body)\n    }\n\n    return \n}\n\nfunction OnDelete(meta, options) {\n    log(\"Doc deleted/expired\", meta.id);\n}","depcfg":{"buckets":[{"alias":"target","bucket_name":"main","scope_name":"data","collection_name":"*","access":"rw"}],"curl":[{"hostname":"http://ec2-13-215-49-139.ap-southeast-1.compute.amazonaws.com:5000","value":"embedding_endpoint","auth_type":"no-auth","username":"","password":"*****","bearer_key":"*****","allow_cookies":false,"validate_ssl_certificate":false}],"source_bucket":"main","source_scope":"data","source_collection":"*","metadata_bucket":"meta","metadata_scope":"_default","metadata_collection":"_default"},"version":"evt-7.6.1-3202-ee","enforce_schema":false,"handleruuid":531664663,"function_instance_id":"QXKLJ3","appname":"embedding","settings":{"dcp_stream_boundary":"everything","deadline_timeout":62,"deployment_status":true,"description":"","execution_timeout":60,"language_compatibility":"6.6.2","log_level":"INFO","n1ql_consistency":"none","processing_status":true,"timer_context_size":1024,"user_prefix":"eventing","worker_count":10},"function_scope":{"bucket":"*","scope":"*"}}]
+[
+    {
+        "appcode": "function OnUpdate(doc, meta) {\n    const docid = meta.id\n    log(\"Doc created/updated\", docid);\n\n    //check if the document is already embedded\n    const { \n        checked,\n        embedding,\n        embedding_hugging_face\n    } = doc \n\n    if ( checked || embedding != null || embedding_hugging_face != null ) {\n        log(\"document already embedded, returning\")\n        return \n    }\n\n    //get collection name\n    const collection_name = meta.keyspace.collection_name\n\n    //assemble the field for embedding\n    let assembled_for_embedding = null \n\n    //process collection products\n    if (collection_name == \"products\") {\n        log(\"document not in products collection, returning\")\n\n        const { \n            product_name,\n            product_overview,\n            product_promotion_details,\n            product_eligibles,\n            product_details,\n            product_exclusions,\n        } = doc \n    \n        assembled_for_embedding = [product_name, product_overview, product_promotion_details, product_eligibles, product_details, product_exclusions].join(\".  \")    \n    } \n\n    //process collection policies\n    else if (collection_name == \"policies\") {\n        const { content } = doc\n        assembled_for_embedding = content \n    }\n    \n    //return if nothing to process \n    if ( assembled_for_embedding == null ) {\n        log(\"no fields to embed, returning\")\n        return \n    }   \n\n    log(\"assembled_for_embedding: \", assembled_for_embedding)\n\n    var request = {\n        path: '/create_embedding',\n        params: {\n        },\n        body: {\n            \"string\": assembled_for_embedding,\n        }\n    };\n\n    var response = curl('POST', embedding_endpoint, request);\n\n    if (response.status == 200) {\n        log('embedding successully generated..')\n        var data = response.body;\n        const [openai_embedding, huggingface_embedding] = data\n\n        let newDoc = doc \n\n        newDoc['assembled_for_embedding'] = assembled_for_embedding\n        newDoc['embedding'] = openai_embedding\n        newDoc['embedding_hugging_face'] = huggingface_embedding\n        newDoc['checked'] = true\n\n        couchbase.upsert(target,{\n            \"id\": docid, \n            \"keyspace\": {\n                \"bucket_name\": \"main\",\n                \"scope_name\": \"data\",\n                \"collection_name\": collection_name\n            }}, \n            newDoc\n        )\n    }\n\n    else { \n        log(\"Failed to create profile: \" + response.status + \" \" + response.body)\n    }\n\n    return \n}\n\nfunction OnDelete(meta, options) {\n    log(\"Doc deleted/expired\", meta.id);\n}",
+        "depcfg": {
+            "buckets": [
+                {
+                    "alias": "target",
+                    "bucket_name": "main",
+                    "scope_name": "data",
+                    "collection_name": "*",
+                    "access": "rw"
+                }
+            ],
+            "curl": [
+                {
+                    "hostname": "http://ec2-13-215-49-139.ap-southeast-1.compute.amazonaws.com:5000",
+                    "value": "embedding_endpoint",
+                    "auth_type": "no-auth",
+                    "username": "",
+                    "password": "*****",
+                    "bearer_key": "*****",
+                    "allow_cookies": false,
+                    "validate_ssl_certificate": false
+                }
+            ],
+            "source_bucket": "main",
+            "source_scope": "data",
+            "source_collection": "*",
+            "metadata_bucket": "meta",
+            "metadata_scope": "_default",
+            "metadata_collection": "_default"
+        },
+        "version": "evt-7.6.1-3202-ee",
+        "enforce_schema": false,
+        "handleruuid": 531664663,
+        "function_instance_id": "QXKLJ3",
+        "appname": "embedding",
+        "settings": {
+            "dcp_stream_boundary": "everything",
+            "deadline_timeout": 62,
+            "deployment_status": true,
+            "description": "",
+            "execution_timeout": 60,
+            "language_compatibility": "6.6.2",
+            "log_level": "INFO",
+            "n1ql_consistency": "none",
+            "processing_status": true,
+            "timer_context_size": 1024,
+            "user_prefix": "eventing",
+            "worker_count": 10
+        },
+        "function_scope": {
+            "bucket": "*",
+            "scope": "*"
+        }
+    }
+]

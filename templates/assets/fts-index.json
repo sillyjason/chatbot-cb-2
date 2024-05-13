@@ -1,10 +1,8 @@
 {
   "type": "fulltext-index",
-  "name": "main.data.embedding-index",
-  "uuid": "139a13bad9ef07b3",
+  "name": "embedding-index",
   "sourceType": "gocbcore",
   "sourceName": "main",
-  "sourceUUID": "0f4ba548d805fb86b5d41dd7bc5d3a9b",
   "planParams": {
     "maxPartitionsPerPIndex": 1024,
     "indexPartitions": 1

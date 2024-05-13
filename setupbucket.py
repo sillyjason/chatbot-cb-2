@@ -1,15 +1,27 @@
 import os
 import requests
 from dotenv import load_dotenv
+import argparse 
+from requests.auth import HTTPBasicAuth
 
 load_dotenv()
 
+#set up argparse 
+parser = argparse.ArgumentParser()
+parser.add_argument('--capella', action='store_true', default=False, help='if the environment is Capella')
+args = parser.parse_args()
+IS_CAPELLA = args.capella
 
+init_message = "Setting up for Capella.." if IS_CAPELLA else "Setting up for Servers.."
+print(init_message)
+
+#get the environment variables
 BASEURL = "https://cloudapi.cloud.couchbase.com"
 TOKEN = os.getenv("CAPELLA_API_KEY_TOKEN")
 ORG_ID = os.getenv("ORG_ID")
 PROJECT_ID = os.getenv("PROJECT_ID")
 CLUSTER_ID = os.getenv("CLUSTER_ID")
+EE_HOSTNAME = os.getenv("EE_HOSTNAME")
 
 
 print("start setting up data structures..")
@@ -18,141 +30,82 @@ print("start setting up data structures..")
 headers = {"Authorization": f"Bearer {TOKEN}"}
 
 
+def create_bucket(bucket_name, ram_quota): 
+    url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets" if IS_CAPELLA else f"http://{EE_HOSTNAME}:8091/pools/default/buckets"
+    
+    body = { 
+        "name": bucket_name,
+        "type": "couchbase",
+        "storageBackend": "couchstore",
+        "memoryAllocationInMb": ram_quota,
+        "bucketConflictResolution": "seqno",
+        "replicas": 1,
+        "flush": True
+    } if IS_CAPELLA else {
+        'name': bucket_name,
+        'ramQuota': ram_quota,
+        'bucketType': 'couchbase',
+    }
+    
+    response = requests.post(url, headers=headers, json=body) if IS_CAPELLA else requests.post(url, auth=HTTPBasicAuth(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD")), data=body)
+
+    success_code = 201 if IS_CAPELLA else 202
+    if response.status_code == success_code:
+        print(f"Created bucket '{bucket_name}'")
+        return response.json()['id'] if IS_CAPELLA else True
+    
+    else:
+        print(f"Error creating bucket {bucket_name}: {response.text}")
+        return None
+
+
+def create_scope(bucket_id, scope_name, bucket_name):
+    url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{bucket_id}/scopes" if IS_CAPELLA else f"http://{EE_HOSTNAME}:8091/pools/default/buckets/{bucket_name}/scopes"
+    response = requests.post(url, headers=headers, json={"name": scope_name}) if IS_CAPELLA else requests.post(url, auth=HTTPBasicAuth(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD")), data={"name": scope_name})
+    success_code = 201 if IS_CAPELLA else 200
+    if response.status_code == success_code:
+        print(f"Created scope '{bucket_name}.{scope_name}'")
+        return True
+    else:
+        print(f"Error creating scope {scope_name}: {response.text}")
+        return False
+
+def create_collection(bucket_id, bucket_name, scope_name, collection_name):
+    url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{bucket_id}/scopes/{scope_name}/collections" if IS_CAPELLA else f"http://{EE_HOSTNAME}:8091/pools/default/buckets/{bucket_name}/scopes/{scope_name}/collections"
+    response = requests.post(url, headers=headers, json={"name": collection_name}) if IS_CAPELLA else requests.post(url, auth=HTTPBasicAuth(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD")), data={"name": collection_name})
+ 
+    success_code = 201 if IS_CAPELLA else 200
+    if response.status_code == success_code:
+        print(f"Created collection '{bucket_name}.{scope_name}.{collection_name}'")
+        return True
+    else:
+        print(f"Error creating colletion {collection_name}: {response.text}")
+        return False
+
+
 #create bucket main 
-BUCKET_MAIN_ID = None 
-url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets"
+BUCKET_MAIN_ID = create_bucket("main", 2000)
 
-body = {
-    "name": "main",
-    "type": "couchbase",
-    "storageBackend": "couchstore",
-    "memoryAllocationInMb": 2000,
-    "bucketConflictResolution": "seqno",
-    "replicas": 1,
-    "flush": True,
-}
+#create bucket meta
+create_bucket("meta", 1000)
 
-response = requests.post(url, headers=headers, json=body)
-
-if response.status_code == 201:
-    data = response.json()
-    BUCKET_MAIN_ID = data['id']
-    print("Created bucket 'main'")
-else:
-    print(f"Error: {response.text}")
-
-
-#create bucket meta 
-BUCKET_META = "meta"
-
-body = {
-    "name": BUCKET_META,
-    "type": "couchbase",
-    "storageBackend": "couchstore",
-    "memoryAllocationInMb": 1000,
-    "bucketConflictResolution": "seqno",
-    "replicas": 1,
-    "flush": True,
-}
-
-response = requests.post(url, headers=headers, json=body)
-
-if response.status_code == 201:
-    print("Created bucket 'meta'")
-else:
-    print(f"Error: {response.text}")
-
-
-#create scope raw and data under BUCKET_MAIN
 if BUCKET_MAIN_ID is not None:
-    SCOPE_RAW_CREATED = False
-    SCOPE_DATA_CREATED = False
-    SCOPE_CHATS_CREATED = False
-    scope_url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{BUCKET_MAIN_ID}/scopes"
+    scope_raw_created = create_scope(BUCKET_MAIN_ID, "raw", "main")
+    scope_data_created = create_scope(BUCKET_MAIN_ID, "data", "main")
+    scope_chats_created = create_scope(BUCKET_MAIN_ID, "chats", "main")
     
-    #create scope raw
-    response = requests.post(scope_url, headers=headers, json={"name": "raw"})
-    if response.status_code == 201:
-        SCOPE_RAW_CREATED = True
-        print("Created scope 'main.raw'")
-    else:
-        print(f"Error: {response.text}")
+    if scope_raw_created:
+        create_collection(BUCKET_MAIN_ID, "main", "raw", "raw")
+        create_collection(BUCKET_MAIN_ID, "main", "raw", "formatted")
+    
+    if scope_data_created:
+        create_collection(BUCKET_MAIN_ID, "main", "data", "products")
+        create_collection(BUCKET_MAIN_ID, "main", "data", "policies")
         
-    #create scope data
-    response = requests.post(scope_url, headers=headers, json={"name": "data"})
-    if response.status_code == 201:
-        SCOPE_DATA_CREATED = True
-        print("Created scope 'main.data'")
-    else:
-        print(f"Error: {response.text}")
-        
-    #create scope chats
-    response = requests.post(scope_url, headers=headers, json={"name": "chats"})
-    if response.status_code == 201:
-        SCOPE_CHATS_CREATED = True
-        print("Created scope 'main.chats'")  
-    else:
-        print(f"Error: {response.text}")
-        
-    
-    #create collection human under scope chats
-    if SCOPE_CHATS_CREATED is True:
-        collection_url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{BUCKET_MAIN_ID}/scopes/chats/collections"
-        response = requests.post(collection_url, headers=headers, json={"name": "human"})
-        if response.status_code == 201:
-            print("Created collection 'main.chats.human'")
-        else:
-            print(f"Error: {response.text}")
-        
-        #create collection bot under scope chats
-        collection_url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{BUCKET_MAIN_ID}/scopes/chats/collections"
-        response = requests.post(collection_url, headers=headers, json={"name": "bot"})
-        if response.status_code == 201:
-            print("Created collection 'main.chats.bot'")
-        else:
-            print(f"Error: {response.text}")
-    
-    
-    #create collection raw under scope raw
-    if SCOPE_RAW_CREATED is True:
-        collection_url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{BUCKET_MAIN_ID}/scopes/raw/collections"
-        response = requests.post(collection_url, headers=headers, json={"name": "raw"})
-        if response.status_code == 201:
-            print("Created collection 'main.raw.raw'")
-        else:
-            print(f"Error: {response.text}")
-            
-        #create collection formatted under scope raw
-        collection_url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{BUCKET_MAIN_ID}/scopes/raw/collections"
-        response = requests.post(collection_url, headers=headers, json={"name": "formatted"})
-        if response.status_code == 201:
-            print("Created collection 'main.raw.formatted'")
-        else:
-            print(f"Error: {response.text}")
-            
-    #create collection products under scope data
-    if SCOPE_DATA_CREATED is True:
-        collection_url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{BUCKET_MAIN_ID}/scopes/data/collections"
-        response = requests.post(collection_url, headers=headers, json={"name": "products"})
-        if response.status_code == 201:
-            print("Created collection 'main.data.products'")
-        else:
-            print(f"Error: {response.text}")
-            
-        #create collection policies under scope data
-        collection_url = f"{BASEURL}/v4/organizations/{ORG_ID}/projects/{PROJECT_ID}/clusters/{CLUSTER_ID}/buckets/{BUCKET_MAIN_ID}/scopes/data/collections"
-        response = requests.post(collection_url, headers=headers, json={"name": "policies"})
-        if response.status_code == 201:
-            print("Created collection 'main.data.policies'")
-        else:
-            print(f"Error: {response.text}")
-    
-    
-else:
-    print("Error: BUCKET_MAIN_ID is None")
+    if scope_chats_created:
+        create_collection(BUCKET_MAIN_ID, "main", "chats", "human")
+        create_collection(BUCKET_MAIN_ID, "main", "chats", "bot")
 
-
-print('Setup complete.')
-    
+print("Done setting up data structures..")
 
 
