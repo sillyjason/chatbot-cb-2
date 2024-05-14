@@ -2,6 +2,8 @@ import os
 import requests
 from dotenv import load_dotenv
 import json 
+import re
+import os
 
 load_dotenv()
 
@@ -21,7 +23,7 @@ def import_function(function_name):
         with open(f'./templates/assets/eventing/{function_name}.json', 'r') as file:
             data = json.load(file)
             data_str = json.dumps(data)
-            data_str = data_str.replace("ec2-*.ap-southeast-1.compute.amazonaws.com", CHATBOT_APP_END_POINT)
+            data_str = re.sub(r"ec2-.+\.com", CHATBOT_APP_END_POINT, data_str)
             data = json.loads(data_str)
             
         response = requests.post(url, json=data, auth=(CB_USERNAME, CB_PASSWORD))
@@ -45,10 +47,7 @@ print('importing fts index...')
 def import_fts_index():
     try:
         url = f"http://{SEARCH_HOSTNAME}:8094/api/bucket/main/scope/data/index/embedding-index"
-        
-        print("url: ", url)
         with open(f'./templates/assets/fts-index.json', 'r') as file:
-            print("file: ", file)
             data = json.load(file)
             response = requests.put(url, auth=(CB_USERNAME, CB_PASSWORD), json=data)
             response_json = response.json()
@@ -61,3 +60,20 @@ def import_fts_index():
 import_fts_index()
 
 print("FTS index imported successfully!")
+
+
+#updating the endpoint in templates/index.html 
+index_file = "./templates/index.html"
+
+try:
+    with open(index_file, 'r') as file:
+        content = file.read()
+        updated_content = content.replace("http://localhost:5000", f"http://{CHATBOT_APP_END_POINT}:5000")
+    
+    with open(index_file, 'w') as file:
+        file.write(updated_content)
+    
+    print("Endpoint updated successfully in index.html")
+    
+except Exception as e:
+    print(f"Error updating endpoint in index.html: {str(e)}")

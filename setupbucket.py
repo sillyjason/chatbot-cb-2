@@ -45,6 +45,7 @@ def create_bucket(bucket_name, ram_quota):
         'name': bucket_name,
         'ramQuota': ram_quota,
         'bucketType': 'couchbase',
+        'flushEnabled': 1
     }
     
     response = requests.post(url, headers=headers, json=body) if IS_CAPELLA else requests.post(url, auth=HTTPBasicAuth(os.getenv("CB_USERNAME"), os.getenv("CB_PASSWORD")), data=body)

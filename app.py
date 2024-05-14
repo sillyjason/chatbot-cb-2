@@ -106,14 +106,12 @@ def handle_message(msg_to_process):
     print(f"Generated vector..")
    
     #3. using Couchbase SDK  
-    key_context_field = os.getenv("KEY_CONTEXT_FIELD")
-    
     if embedding_model_toggle == "model1":
         embedding_field = 'embedding'
     else:
         embedding_field = "embedding_hugging_face"
     
-    result = cb_vector_search(cluster, embedding_field, vector, key_context_field)
+    result = cb_vector_search(cluster, embedding_field, vector, 'assembled_for_embedding')
     print(f"Search result retrieved..")
     
     #4. parsing the results
@@ -124,7 +122,7 @@ def handle_message(msg_to_process):
     for row in result.rows():
         product_ids.append(row.id)
         
-        additional_context += row.fields[key_context_field] + "\n"
+        additional_context += row.fields['assembled_for_embedding'] + "\n"
         documents.append(row.fields)
     
     #5. streaming
