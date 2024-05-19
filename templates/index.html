@@ -199,7 +199,7 @@
 </head>
 <body>
     <div id="header">CHATBOT with COUCHBASE</div>
-    <div style="position: absolute; top: 10px; right: 10px;">
+    <!-- <div style="position: absolute; top: 10px; right: 10px;">
         <label class="switch">
             <input type="checkbox" id="toggle">
             <span class="slider round">
@@ -207,14 +207,14 @@
                 <span class="label-right">Claude</span>
             </span>
         </label>
-    </div>
-    <div id="embedding_model_selection">
+    </div> -->
+    <!-- <div id="embedding_model_selection">
         <span>Embedding Model:</span>
         <select id="model-selection" onchange="handleModelChange(event)">
             <option value="model1" selected>[OpenAI]text-embedding-ada-002</option>
             <option value="model2">[HuggingFace]sentence-transformers/all-MiniLM-l6-v2</option>
         </select>
-    </div>
+    </div> -->
     <div id="chatbox"> </div>
     <div id="message-container">
         <input id="message" type="text" onkeydown="if(event.keyCode===13) document.getElementById('send').click()"> <!-- Updated -->

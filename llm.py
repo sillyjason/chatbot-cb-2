@@ -8,9 +8,9 @@ from langchain_anthropic import ChatAnthropic
 from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 
 
-chat_openai = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.2)    
+chat_openai = ChatOpenAI(model="gpt-4o", temperature=0.1)    
 
-chat_claude = ChatAnthropic(temperature=0.2, api_key=os.getenv('ANTHROPIC_API_KEY'), model_name="claude-3-haiku-20240307")
+chat_claude = ChatAnthropic(temperature=0.1, api_key=os.getenv('ANTHROPIC_API_KEY'), model_name="claude-3-haiku-20240307")
 
 client_openai = OpenAI()
 
