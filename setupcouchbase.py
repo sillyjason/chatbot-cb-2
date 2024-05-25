@@ -48,7 +48,7 @@ def insert_user_message(cluster, query, transformed_query, deviceType, browserTy
         return None 
 
 
-def insert_bot_message(cluster, message, user_msg_id, chat_model, product_ids): 
+def insert_bot_message(cluster, message, user_msg_id, product_ids): 
     chat_collection = cluster.bucket("main").scope("chats").collection("bot")   
     
     try:
@@ -58,7 +58,6 @@ def insert_bot_message(cluster, message, user_msg_id, chat_model, product_ids):
             message=message,
             user_msg_id=user_msg_id,
             timestamp=datetime.datetime.now().isoformat(),
-            chat_model=chat_model,
             product_ids=product_ids
         )
         chat_collection.upsert(

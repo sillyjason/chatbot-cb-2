@@ -6,7 +6,7 @@ import time
 from langchain_core.documents import Document
 from setupcouchbase import cb_vector_search, insert_user_message, insert_bot_message, update_bot_message_rating
 from langchain.memory import ChatMessageHistory
-from llm import create_openai_embeddings, create_hf_embeddings, generate_query_transform_prompt, generate_document_chain
+from llm import create_openai_embeddings, generate_query_transform_prompt, generate_document_chain
 from data_processor.data_reformat import data_reformat
 from data_processor.metadata_tag import tag_metadata
 import argparse 
@@ -14,7 +14,6 @@ from couchbase.auth import PasswordAuthenticator
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions
 from datetime import timedelta
-from couchbase.options import (ClusterOptions, ClusterTimeoutOptions, QueryOptions)
 
 load_dotenv()
 
@@ -60,17 +59,6 @@ demo_ephemeral_chat_history = ChatMessageHistory()
 @app.route('/')
 def index():
     return render_template('index.html')
-
-
-@app.route('/update_chat_model_toggle', methods=['POST'])
-def update_chat_model_toggle():
-    global chat_model_toggle
-    chat_model_toggle = request.json['value']
-    return jsonify(success=True)
-
-
-@app.route('/update_embedding_model_toggle', methods=['POST'])
-def update_embedding_model_toggle():
     global embedding_model_toggle
     embedding_model_toggle = request.json['selectedModel']
     return jsonify(success=True)
@@ -95,23 +83,15 @@ def handle_message(msg_to_process):
     demo_ephemeral_chat_history.add_user_message(query)
     
     #1. incorporating the chat history together with the new questions to generate an independent prompt
-    new_query = generate_query_transform_prompt(chat_model_toggle, demo_ephemeral_chat_history.messages)
+    new_query = generate_query_transform_prompt(demo_ephemeral_chat_history.messages)
     print(f"Generated query: {new_query}")
     
     #2. turn it into an embedding
-    if embedding_model_toggle == "model1":
-        vector = create_openai_embeddings(new_query)
-    else:
-        vector = create_hf_embeddings(new_query)
+    vector = create_openai_embeddings(new_query)
     print(f"Generated vector..")
    
     #3. using Couchbase SDK  
-    if embedding_model_toggle == "model1":
-        embedding_field = 'embedding'
-    else:
-        embedding_field = "embedding_hugging_face"
-    
-    result = cb_vector_search(cluster, embedding_field, vector, 'assembled_for_embedding')
+    result = cb_vector_search(cluster, "embedding", vector, 'assembled_for_embedding')
     print(f"Search result retrieved..")
     
     #4. parsing the results
@@ -126,7 +106,7 @@ def handle_message(msg_to_process):
         documents.append(row.fields)
     
     #5. streaming
-    document_chain = generate_document_chain(chat_model_toggle)
+    document_chain = generate_document_chain()
     
     message_string = ""   
     timestamp = int(time.time())
@@ -147,7 +127,7 @@ def handle_message(msg_to_process):
     #6. add bot message, both locally and to couchbase
     demo_ephemeral_chat_history.add_ai_message(message_string)
     user_message_uuid = insert_user_message(cluster, query, new_query, deviceType, browserType)
-    bot_message_id = insert_bot_message(cluster, message_string, user_message_uuid, chat_model_toggle, product_ids)
+    bot_message_id = insert_bot_message(cluster, message_string, user_message_uuid, product_ids)
     
     if bot_message_id is not None:
         emit('bot_message_creation', bot_message_id)
@@ -158,10 +138,8 @@ def split_string():
     data = request.get_json()
     string = data.get('string', '')
     
-    openai_embedding = create_openai_embeddings(string)
-    hugging_face_embedding = create_hf_embeddings(string)
-    
-    return jsonify([openai_embedding, hugging_face_embedding])
+    openai_embedding = create_openai_embeddings(string)    
+    return jsonify(openai_embedding)
 
 
 @app.route('/data_reformatting', methods=['POST'])
@@ -182,7 +160,6 @@ def metadata_tag():
     type = tag_metadata(data)
 
     return jsonify(type)
-
     
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)

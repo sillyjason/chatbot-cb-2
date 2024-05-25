@@ -62,20 +62,6 @@
                 }
               ]
             },
-            "embedding_hugging_face": {
-              "dynamic": false,
-              "enabled": true,
-              "fields": [
-                {
-                  "dims": 384,
-                  "index": true,
-                  "name": "embedding_hugging_face",
-                  "similarity": "dot_product",
-                  "type": "vector",
-                  "vector_index_optimized_for": "recall"
-                }
-              ]
-            },
             "from": {
               "dynamic": false,
               "enabled": true,
@@ -119,20 +105,6 @@
                   "dims": 1536,
                   "index": true,
                   "name": "embedding",
-                  "similarity": "dot_product",
-                  "type": "vector",
-                  "vector_index_optimized_for": "recall"
-                }
-              ]
-            },
-            "embedding_hugging_face": {
-              "dynamic": false,
-              "enabled": true,
-              "fields": [
-                {
-                  "dims": 384,
-                  "index": true,
-                  "name": "embedding_hugging_face",
                   "similarity": "dot_product",
                   "type": "vector",
                   "vector_index_optimized_for": "recall"

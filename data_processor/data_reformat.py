@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+from data_processor.pii_processor import mask_sensitive_data
 
     
 def data_reformat(data):    
@@ -24,4 +25,6 @@ def data_reformat(data):
             # Remove line breaks and extra spaces
             data[field] = re.sub(r'\s+', ' ', value.replace('\n', '').strip())
 
+    # Mask sensitive data
+    data = mask_sensitive_data(data)
     return data
