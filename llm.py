@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from openai import OpenAI
 
 
-chat_openai = ChatOpenAI(model="gpt-4o", temperature=0.1)    
+chat_openai = ChatOpenAI(model="gpt-4o", temperature=0.05)    
 
 client_openai = OpenAI()
 
