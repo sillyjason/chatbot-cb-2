@@ -13,6 +13,25 @@ CB_USERNAME = os.getenv("CB_USERNAME")
 CB_PASSWORD = os.getenv("CB_PASSWORD")
 CHATBOT_APP_END_POINT= os.getenv("CHATBOT_APP_END_POINT")
 
+
+#updating the endpoint in templates/index.html 
+index_file = "./templates/index.html"
+
+try:
+    with open(index_file, 'r') as file:
+        content = file.read()
+        updated_content = content.replace("http://localhost:5000", f"http://{CHATBOT_APP_END_POINT}:5000")
+    
+    with open(index_file, 'w') as file:
+        file.write(updated_content)
+    
+    print("Endpoint updated successfully in index.html")
+    
+except Exception as e:
+    print(f"Error updating endpoint in index.html: {str(e)}")
+    
+    
+
 # setup functions 
 print("Importing functions...")
 
@@ -60,20 +79,3 @@ def import_fts_index():
 import_fts_index()
 
 print("FTS index imported successfully!")
-
-
-#updating the endpoint in templates/index.html 
-index_file = "./templates/index.html"
-
-try:
-    with open(index_file, 'r') as file:
-        content = file.read()
-        updated_content = content.replace("http://localhost:5000", f"http://{CHATBOT_APP_END_POINT}:5000")
-    
-    with open(index_file, 'w') as file:
-        file.write(updated_content)
-    
-    print("Endpoint updated successfully in index.html")
-    
-except Exception as e:
-    print(f"Error updating endpoint in index.html: {str(e)}")
