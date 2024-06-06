@@ -6,14 +6,13 @@ Before running this file, you'll need to create a terraform.template.tfvars and 
 https://www.couchbase.com/blog/terraform-provider-couchbase-capella/
 
 You'll also need to get your Capella Organization ID, Project ID, and Authentication Token, the details of which is also documented in the blog post.
+
+Also get your AWS access key and secret key from the AWS console. 
 */
 
 
 
-/*aws vm instance for running the chatbot
-replace the 
-
-*/
+#aws vm instance for running the chatbot
 provider "aws" {
     region = "ap-southeast-1"
     access_key = var.access_key

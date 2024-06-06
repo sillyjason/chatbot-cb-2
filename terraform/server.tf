@@ -1,6 +1,8 @@
 /*
 This Terraform templates sets up the necessary instances needed to run this Couchbase Chatbot application.
 You'll need at least one VM to run the chatbot application. 
+
+Also get your AWS access key and secret key from the AWS console. 
 */
 
 
