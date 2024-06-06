@@ -4,8 +4,14 @@ from dotenv import load_dotenv
 import json 
 import re
 import os
+import argparse 
 
 load_dotenv()
+#set up argparse 
+parser = argparse.ArgumentParser()
+parser.add_argument('--capella', action='store_true', default=False, help='if the environment is Capella')
+args = parser.parse_args()
+IS_CAPELLA = args.capella
 
 EVENTING_HOSTNAME = os.getenv("EVENTING_HOSTNAME")
 SEARCH_HOSTNAME = os.getenv("SEARCH_HOSTNAME")
@@ -30,12 +36,16 @@ try:
 except Exception as e:
     print(f"Error updating endpoint in index.html: {str(e)}")
     
-    
+
 
 # setup functions 
-print("Importing functions...")
-
 def import_function(function_name):
+    
+    if IS_CAPELLA:
+        return 
+    
+    print(f"Importing function {function_name}...")
+    
     try:
         url = f"http://{EVENTING_HOSTNAME}:8096/api/v1/functions/{function_name}"
 
@@ -52,25 +62,25 @@ def import_function(function_name):
     
     except Exception as e:
         print(f"Error importing function {function_name}: {str(e)}")
-    
 
 import_function("reformatting")
 import_function("metadata_labelling")
 import_function("embedding")
-    
-print("Functions imported successfully!")
 
 
 #setup fts index
-print('importing fts index...')
 def import_fts_index():
+    if IS_CAPELLA:
+        return 
+    
+    print(f"Importing fts index...")
+    
     try:
         url = f"http://{SEARCH_HOSTNAME}:8094/api/bucket/main/scope/data/index/embedding-index"
         with open(f'./templates/assets/fts-index.json', 'r') as file:
             data = json.load(file)
-            response = requests.put(url, auth=(CB_USERNAME, CB_PASSWORD), json=data)
-            response_json = response.json()
-            print(response_json)
+            requests.put(url, auth=(CB_USERNAME, CB_PASSWORD), json=data)
+            print('fts index imported successfully')
             
 
     except Exception as e:
@@ -78,4 +88,4 @@ def import_fts_index():
 
 import_fts_index()
 
-print("FTS index imported successfully!")
+print("setup complete.")
