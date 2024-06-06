@@ -17,9 +17,10 @@ prompt_template = PromptTemplate.from_template(
    if the information is an email, replace it with xxxx@xxxx.xxxx'
    If the information is an any other nature, replace it with 'xxxxxxxx'.
    
-   
-   return the transformed document as a JSON object.
    input_text: {input_text}
+   return the transformed document as a JSON object, all property names should be enclosed in double quotes.
+   
+   output_as_json:
    """
 )
 
