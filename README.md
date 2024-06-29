@@ -11,6 +11,8 @@ The bulk of work today actually resides in tranforming their unstructured data t
 This doesn't mean we should gloss over the continuous optimization efforts on prompting, RAG data and workflow tuning, embedding & foundation model selection, etc, which are equally important.   
 
 
+<br>
+
 **2. Tech stack complexities 🔧🔨🛠️**
 
 A production RAG system would minimially necessitates functionalities of vector, ACID transationc, JSON store, SQL query, OLAP, streaming. If you use one tool per component, you're already dealing with some complexities, which is always the archenemy of agile innovation. This is more true than ever in today's world.
@@ -34,7 +36,7 @@ There are already a plethora of demos out there that allows you to upload a PDF 
 
 <br><br>
 
-## What Do I need to run this demo? 
+## What Do I Need to Run This Demo? 
 1. an OPENAI api key 
    
 2. 1 linux virtual machine for hosting the app, and another for installing Couchbase. I'll use AWS EC2 but anything with minimal config will do
@@ -106,10 +108,12 @@ Create another VM, install Couchbase with these services enabled: **Data, Query,
 
 Let's call this one our **Couchbase Node**. Grab it's IPv4 address too.
 
+<br>
+
 >🙌🏻 In a production set up you'll need at least 3 nodes to run Couchbase for HA purposes. In our case, let's just use 1 node for simplicity.
 
 
-<br>
+<br><br>
 
 **1.4 Get, Set, Run!**
 
