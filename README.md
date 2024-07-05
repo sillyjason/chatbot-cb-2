@@ -26,7 +26,10 @@ This demo attempts an answer to problems above from Couchbase’s point of view.
 
 # What's Happening?
 
-![image](https://github.com/sillyjason/chatbot-cb-2/assets/54433200/41c3cc92-8198-48bc-8a37-d652a1979ab6)
+Under the hood we're leveraging these technologies.
+
+![image](https://github.com/sillyjason/chatbot-cb-2/assets/54433200/29f00253-a5a1-4198-8ddb-820accb914de)
+
 
 
 
