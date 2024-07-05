@@ -24,6 +24,9 @@ This demo attempts an answer to problems above from Couchbase’s point of view.
 <br>
 
 
+# What's Happening?
+
+![image](https://github.com/sillyjason/chatbot-cb-2/assets/54433200/41c3cc92-8198-48bc-8a37-d652a1979ab6)
 
 
 
