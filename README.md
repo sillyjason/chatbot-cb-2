@@ -28,6 +28,10 @@ This demo attempts an answer to problems above from Couchbase’s point of view.
 
 Under the hood we're leveraging these technologies.
 
+- Couchbase serves as the data backend, housing not just the final vectors, but also transitory layers between unstructured data source and final RAG-ready state.
+- Couchbase Eventing is used to automate the function calling and data mutations.
+- OpenAI is used for embedding, metadata labelling, and text synthesis.
+
 ![image](https://github.com/sillyjason/chatbot-cb-2/assets/54433200/29f00253-a5a1-4198-8ddb-820accb914de)
 
 
