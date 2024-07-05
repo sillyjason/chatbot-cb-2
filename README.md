@@ -32,7 +32,8 @@ Under the hood we're leveraging these technologies.
 - Couchbase Eventing is used to automate the function calling and data mutations.
 - OpenAI is used for embedding, metadata labelling, and text synthesis.
 
-![image](https://github.com/sillyjason/chatbot-cb-2/assets/54433200/29f00253-a5a1-4198-8ddb-820accb914de)
+![image](https://github.com/sillyjason/chatbot-cb-2/assets/54433200/f74f11c2-a732-4c9d-a3ad-918db209b553)
+
 
 
 
