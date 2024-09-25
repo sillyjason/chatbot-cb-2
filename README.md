@@ -24,6 +24,17 @@ This demo attempts an answer to problems above from Couchbase’s point of view.
 <br>
 
 
+# What's Happening?
+
+Under the hood we're leveraging these technologies.
+
+- Couchbase serves as the data backend, housing not just the final vectors, but also transitory layers between unstructured data source and final RAG-ready state.
+- Couchbase Eventing is used to automate the function calling and data mutations.
+- OpenAI is used for embedding, metadata labelling, and text synthesis.
+
+![image](https://github.com/sillyjason/chatbot-cb-2/assets/54433200/f74f11c2-a732-4c9d-a3ad-918db209b553)
+
+
 
 
 
@@ -269,7 +280,7 @@ Go to scope “data”. The 3 raw JSON objects are now pigeonholed into correspo
 <img width="644" alt="image" src="https://github.com/sillyjason/chatbot-cb-2/assets/54433200/113e5053-0704-4a21-92b9-eafa53c2212a">
 
 
-<br>
+<br><br>
 
 ## Now let’s do some chatbot’ing  
 <br>
