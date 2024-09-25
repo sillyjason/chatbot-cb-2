@@ -20,7 +20,7 @@ schema = {
 
 
 # Must be an OpenAI model that supports functions
-llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
+llm = ChatOpenAI(temperature=0, model="gpt-4o")
 
 
 document_transformer = create_metadata_tagger(metadata_schema=schema, llm=llm)
